@@ -15,12 +15,16 @@
 #define CLIENTID    "ExampleClientSub"
 #define TOPIC       "#"
 #define QOS         1
+#define TIMEOUT     10000
+
+volatile BOOL shutdown_initiated = FALSE;
 
 int task_shutdown() {
 #if __linux
     if (syscall(SYS_reboot, LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2, LINUX_REBOOT_CMD_POWER_OFF, 0) == -1)
     {
         perror("Failed with: ");
+        return -1;
     }
 #elif WIN32
     HANDLE hToken;
@@ -55,6 +59,8 @@ int task_shutdown() {
         return -1;
     }
 #endif
+
+    shutdown_initiated = TRUE;
     return 0;
 }
 
@@ -99,28 +105,21 @@ int main(int argc, char *argv[]) {
         goto cleanup;
     }
 
-    printf("Subscribing to topic %s\nfor client %s using QoS%d\n\n"
-           "Press Q<Enter> to quit\n\n", TOPIC, CLIENTID, QOS);
+    printf("Subscribing to topic %s\nfor client %s using QoS%d\n\n", TOPIC, CLIENTID, QOS);
     if ((rc = MQTTClient_subscribe(client, TOPIC, QOS)) != MQTTCLIENT_SUCCESS) {
         printf("Failed to subscribe, return code %d\n", rc);
         rc = -3;
-    } else {
-        int ch;
-        do {
-            ch = getchar();
-        } while (ch != 'Q' && ch != 'q');
-
-        if ((rc = MQTTClient_unsubscribe(client, TOPIC)) != MQTTCLIENT_SUCCESS) {
-            printf("Failed to unsubscribe, return code %d\n", rc);
-            rc = -4;
-        }
     }
 
-    if ((rc = MQTTClient_disconnect(client, 10000)) != MQTTCLIENT_SUCCESS) {
-        printf("Failed to disconnect, return code %d\n", rc);
-        rc = -5;
-    }
+    printf("Press Q<Enter> to quit\n\n");
+    int ch;
+    do {
+        ch = getchar();
+    } while (ch != 'Q' && ch != 'q' && shutdown_initiated);
+
     cleanup:
+    MQTTClient_unsubscribe(client, TOPIC);
+    MQTTClient_disconnect(client, TIMEOUT);
     MQTTClient_destroy(&client);
     return rc;
 }
