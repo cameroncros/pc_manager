@@ -1,8 +1,11 @@
 #include <stdio.h>
+#ifdef __linux
 #include <unistd.h>
 #include <linux/reboot.h>
 #include <syscall.h>
-
+#elifdef WIN32
+#include <Windows.h>
+#endif
 #include "external/paho.mqtt.c/src/MQTTClient.h"
 
 #define CLIENTID    "ExampleClientSub"
@@ -11,7 +14,11 @@
 
 int task_shutdown()
 {
+#ifdef __linux
     syscall(SYS_reboot, LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2, LINUX_REBOOT_CMD_POWER_OFF, 0);
+#elifdef WIN32
+    ExitWindowsEx(EWX_POWEROFF, 0);
+#endif
 }
 
 int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message) {
