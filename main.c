@@ -1,9 +1,9 @@
 #include <stdio.h>
-#ifdef __linux
+#if __linux
 #include <unistd.h>
 #include <linux/reboot.h>
 #include <syscall.h>
-#elifdef WIN32
+#elif WIN32
 #include <Windows.h>
 #endif
 #include "external/paho.mqtt.c/src/MQTTClient.h"
@@ -14,11 +14,19 @@
 
 int task_shutdown()
 {
-#ifdef __linux
-    syscall(SYS_reboot, LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2, LINUX_REBOOT_CMD_POWER_OFF, 0);
-#elifdef WIN32
-    ExitWindowsEx(EWX_POWEROFF, 0);
+#if __linux
+    if (syscall(SYS_reboot, LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2, LINUX_REBOOT_CMD_POWER_OFF, 0) == -1)
+    {
+        perror("Failed with: ");
+    }
+#elif WIN32
+    if (!ExitWindowsEx(EWX_POWEROFF | EWX_FORCE, 0))
+    {
+        printf("%lu\n", GetLastError());
+        return -1;
+    }
 #endif
+    return 0;
 }
 
 int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message) {
