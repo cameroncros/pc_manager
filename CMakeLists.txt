@@ -1,8 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
+
 project(pc_manager)
 
-set(PAHO_BUILD_STATIC TRUE CACHE INTERNAL "")
-add_subdirectory(external/paho.mqtt.c)
+SET(CPACK_PACKAGE_VERSION_MAJOR "0")
+SET(CPACK_PACKAGE_VERSION_MINOR "0")
+SET(CPACK_PACKAGE_VERSION_PATCH "1")
 
-add_executable(pc_manager main.c conn.c utils.h)
-target_link_libraries(pc_manager paho-mqtt3c-static)
+add_subdirectory(pc_manager)

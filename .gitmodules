@@ -1,3 +1,6 @@
-[submodule "external/paho.mqtt.c"]
-	path = external/paho.mqtt.c
+[submodule "pc_manager/external/paho.mqtt.c"]
+	path = pc_manager/external/paho.mqtt.c
 	url = https://github.com/eclipse/paho.mqtt.c.git
+[submodule "pc_manager/external/json-c"]
+	path = pc_manager/external/json-c
+	url = https://github.com/json-c/json-c.git
