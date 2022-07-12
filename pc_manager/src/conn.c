@@ -15,12 +15,33 @@
 #define UNIQUE_ID_FORMAT "%s-%s"
 #define DISCOVERY_TOPIC_FORMAT "homeassistant/button/%s/%s/config"
 
+typedef struct TASK {
+    char* topic;
+    int (*fn)(void);
+
+    struct TASK* next;
+} TASK, *PTASK;
+
+PTASK taskList = NULL;
+
 int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message) {
     printf("Message arrived\n");
     printf("     topic: %s\n", topicName);
     printf("   message: %.*s\n", message->payloadlen, (char *) message->payload);
 
-//    task_shutdown();
+    for (PTASK task = taskList; task != NULL; task = task->next)
+    {
+        if (strcmp(topicName, task->topic) == 0)
+        {
+            int ret = task->fn();
+            if (ret != 0)
+            {
+                printf("Failed to execute :(\n");
+            }
+            break;
+        }
+    }
+
     MQTTClient_freeMessage(&message);
     MQTTClient_free(topicName);
     return 1;
@@ -48,10 +69,18 @@ int conn_init(MQTTClient *client, const char* address) {
     return SUCCESS;
 }
 
-int conn_subscribe(MQTTClient client, const char* topic, QOS qos) {
+int conn_subscribe(MQTTClient client, const char* topic, QOS qos, int (*fn)(void)) {
     printf("Subscribing to topic %s\nfor client %s using QoS%d\n\n", topic, CLIENTID, qos);
     ASSERT_SUCCESS(MQTTClient_subscribe(client, topic, qos),
                    "Failed to subscribe");
+
+    PTASK task = malloc(sizeof(TASK));
+    task->topic = strdup(topic);
+    task->fn = fn;
+
+    task->next = taskList;
+    taskList = task;
+
     return SUCCESS;
 }
 
@@ -63,7 +92,7 @@ int conn_publish(MQTTClient client, const char* topic, const void* value, size_t
 }
 
 
-int conn_register_task(MQTTClient client, const char *taskname, void *fn) {
+int conn_register_task(MQTTClient client, const char *taskname, int (*fn)(void)) {
     char hostname[HOST_NAME_MAX + 1] = {0};
     gethostname(hostname, sizeof(hostname));
     char *location = "Office";
@@ -101,7 +130,7 @@ int conn_register_task(MQTTClient client, const char *taskname, void *fn) {
     sprintf(disco_string, DISCOVERY_TOPIC_FORMAT, taskname, hostname);
     ASSERT_SUCCESS(conn_publish(client, disco_string, object_str, strlen(object_str), QOS0, true),
                    "Failed conn_publish");
-    ASSERT_SUCCESS(conn_subscribe(client, command_topic, QOS1), "Failed conn_subscribe");
+    ASSERT_SUCCESS(conn_subscribe(client, command_topic, QOS1, fn), "Failed conn_subscribe");
     json_object_put(object);
 
     return SUCCESS;
@@ -118,7 +147,30 @@ int conn_deregister_task(MQTTClient client, const char *taskname, void *fn) {
     sprintf(disco_string, DISCOVERY_TOPIC_FORMAT , taskname, hostname);
     ASSERT_SUCCESS(conn_publish(client, disco_string, "", 0, QOS0, true),
                    "Failed conn_publish");
-    ASSERT_SUCCESS(MQTTClient_unsubscribe(client, command_topic), "Failed conn_subscribe");
+    ASSERT_SUCCESS(MQTTClient_unsubscribe(client, command_topic), "Failed conn_unsubscribe");
+
+    PTASK prev = NULL;
+    for (PTASK task = taskList; task != NULL; task = task->next)
+    {
+        if (strcmp(command_topic, task->topic) == 0)
+        {
+            // Remove from list
+            if (prev == NULL)
+            {
+                taskList = task->next;
+            }
+            else
+            {
+                prev->next = task->next;
+            }
+
+            // Free task entry.
+            free(task->topic);
+            free(task);
+            break;
+        }
+        prev = task;
+    }
 
     return SUCCESS;
 }

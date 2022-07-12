@@ -1,17 +1,15 @@
 #include "../conn.h"
 
 #if __linux
-
-#include <unistd.h>
-#include <linux/reboot.h>
-#include <syscall.h>
-#include <stdbool.h>
-
+#  include <unistd.h>
+#  include <linux/reboot.h>
+#  include <syscall.h>
+#  include <stdbool.h>
 #elif WIN32
-#include <Windows.h>
-#define bool BOOL
-#define true TRUE
-#define false FALSE
+#  include <Windows.h>
+#  define bool BOOL
+#  define true TRUE
+#  define false FALSE
 #endif
 
 

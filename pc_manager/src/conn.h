@@ -11,7 +11,7 @@ typedef enum {
 
 int conn_init(MQTTClient *client, const char *address);
 
-int conn_register_task(MQTTClient client, const char *taskname, void *fn);
+int conn_register_task(MQTTClient client, const char *taskname, int (*fn)(void));
 int conn_cleanup(MQTTClient *client);
 
 #endif //PC_MANAGER_CONN_H
