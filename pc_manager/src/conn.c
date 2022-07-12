@@ -12,6 +12,7 @@
 #define TIMEOUT     10000
 
 #define COMMAND_TOPIC_FORMAT "%s/%s/%s"
+#define UNIQUE_ID_FORMAT "%s-%s"
 #define DISCOVERY_TOPIC_FORMAT "homeassistant/button/%s/%s/config"
 
 int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message) {
@@ -67,13 +68,15 @@ int conn_register_task(MQTTClient client, const char *taskname, void *fn) {
     gethostname(hostname, sizeof(hostname));
     char *location = "Office";
     char command_topic[1024] = {0};
+    char unique_id[1024] = {0};
     char disco_string[1024] = {0};
     sprintf(command_topic, COMMAND_TOPIC_FORMAT, location, hostname, taskname);
+    sprintf(unique_id, UNIQUE_ID_FORMAT, hostname, taskname);
 
     struct json_object *object = json_object_new_object();
     json_object_object_add(object, "name", json_object_new_string(taskname));
     json_object_object_add(object, "command_topic", json_object_new_string(command_topic));
-    json_object_object_add(object, "unique_id", json_object_new_string(hostname));
+    json_object_object_add(object, "unique_id", json_object_new_string(unique_id));
     {
         struct json_object *dev_object = json_object_new_object();
         json_object_object_add(dev_object, "name", json_object_new_string(hostname));
