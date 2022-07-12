@@ -9,20 +9,19 @@ include_directories(external/json-c)
 add_executable(pc_manager
         src/main.c
         src/conn.c
-        src/utils.h
+        src/config.c
         src/tasks/shutdown.c
-        src/tasks/shutdown.h
-        src/tasks/reboot.h
-        src/tasks/reboot.c)
+        src/tasks/reboot.c
+        src/sensors/time.c)
 target_link_libraries(pc_manager paho-mqtt3c-static json-c bsd)
 
 install(TARGETS pc_manager)
 
 if (WIN32)
     SET(CPACK_GENERATOR "WIX")
-elseif(UNIX)
+elseif (UNIX)
     SET(CPACK_GENERATOR "DEB")
-endif()
+endif ()
 SET(CPACK_DEBIAN_PACKAGE_MAINTAINER "cc")
 SET(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Monitor PC")
 SET(CPACK_PACKAGE_VENDOR "cc")

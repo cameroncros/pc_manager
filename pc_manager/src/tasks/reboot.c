@@ -51,7 +51,3 @@ int task_reboot() {
 #endif
     return 0;
 }
-
-int register_reboot(MQTTClient client) {
-    return conn_register_task(client, "reboot", task_reboot);
-}

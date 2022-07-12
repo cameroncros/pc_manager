@@ -53,7 +53,3 @@ int task_shutdown() {
 #endif
     return 0;
 }
-
-int register_shutdown(MQTTClient client) {
-    return conn_register_task(client, "shutdown", task_shutdown);
-}

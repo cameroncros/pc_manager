@@ -3,17 +3,18 @@
 #include <bits/local_lim.h>
 #include <unistd.h>
 #include <string.h>
+#include <malloc.h>
 #include "MQTTClient.h"
 #include "utils.h"
 #include "conn.h"
-#include "json.h"
+#include "config.h"
 
 #define CLIENTID    "ExampleClientSub2"
 #define TIMEOUT     10000
 
 #define COMMAND_TOPIC_FORMAT "%s/%s/%s"
 #define UNIQUE_ID_FORMAT "%s-%s"
-#define DISCOVERY_TOPIC_FORMAT "homeassistant/button/%s/%s/config"
+#define DISCOVERY_TOPIC_FORMAT "homeassistant/%s/%s/%s/config"
 
 typedef struct TASK {
     char* topic;
@@ -22,7 +23,15 @@ typedef struct TASK {
     struct TASK* next;
 } TASK, *PTASK;
 
+typedef struct SENSOR {
+    char* topic;
+    char* (*fn)(void);
+
+    struct SENSOR* next;
+} SENSOR, *PSENSOR;
+
 PTASK taskList = NULL;
+PSENSOR sensorList = NULL;
 
 int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message) {
     printf("Message arrived\n");
@@ -91,47 +100,66 @@ int conn_publish(MQTTClient client, const char* topic, const void* value, size_t
     return SUCCESS;
 }
 
-
-int conn_register_task(MQTTClient client, const char *taskname, int (*fn)(void)) {
+int conn_register_task(MQTTClient client, const char *task_name, int (*fn)(void)) {
     char hostname[HOST_NAME_MAX + 1] = {0};
     gethostname(hostname, sizeof(hostname));
     char *location = "Office";
     char command_topic[1024] = {0};
     char unique_id[1024] = {0};
     char disco_string[1024] = {0};
-    sprintf(command_topic, COMMAND_TOPIC_FORMAT, location, hostname, taskname);
-    sprintf(unique_id, UNIQUE_ID_FORMAT, hostname, taskname);
+    sprintf(command_topic, COMMAND_TOPIC_FORMAT, location, hostname, task_name);
+    sprintf(unique_id, UNIQUE_ID_FORMAT, hostname, task_name);
 
     struct json_object *object = json_object_new_object();
-    json_object_object_add(object, "name", json_object_new_string(taskname));
+    json_object_object_add(object, "name", json_object_new_string(task_name));
     json_object_object_add(object, "command_topic", json_object_new_string(command_topic));
     json_object_object_add(object, "unique_id", json_object_new_string(unique_id));
-    {
-        struct json_object *dev_object = json_object_new_object();
-        json_object_object_add(dev_object, "name", json_object_new_string(hostname));
-#if __linux
-        json_object_object_add(dev_object, "model", json_object_new_string("Linux"));
-#elif WIN32
-        json_object_object_add(dev_object, "model", json_object_new_string("Windows"));
-#endif
-        json_object_object_add(dev_object, "manufacturer", json_object_new_string("me"));
-        json_object_object_add(dev_object, "sw_version", json_object_new_string("0.1"));
-        json_object_object_add(dev_object, "suggested_area", json_object_new_string(location));
 
-        {
-            struct json_object *ident_array = json_object_new_array();
-            json_object_array_add(ident_array, json_object_new_string("pc_manager"));
-            json_object_object_add(dev_object, "identifiers", ident_array);
-        }
-        json_object_object_add(object, "device", dev_object);
-    }
+    json_object_object_add(object, "device", get_device(hostname, location));
 
     const char *object_str = json_object_to_json_string(object);
-    sprintf(disco_string, DISCOVERY_TOPIC_FORMAT, taskname, hostname);
+    sprintf(disco_string, DISCOVERY_TOPIC_FORMAT, "button", task_name, hostname);
     ASSERT_SUCCESS(conn_publish(client, disco_string, object_str, strlen(object_str), QOS0, true),
                    "Failed conn_publish");
     ASSERT_SUCCESS(conn_subscribe(client, command_topic, QOS1, fn), "Failed conn_subscribe");
     json_object_put(object);
+
+    return SUCCESS;
+}
+
+int conn_register_sensor(MQTTClient client, const char *sensor_name, const char* unit, const char* class, char* (*fn)(void)) {
+    char hostname[HOST_NAME_MAX + 1] = {0};
+    gethostname(hostname, sizeof(hostname));
+    char *location = "Office";
+    char state_topic[1024] = {0};
+    char unique_id[1024] = {0};
+    char disco_string[1024] = {0};
+    sprintf(state_topic, COMMAND_TOPIC_FORMAT, location, hostname, sensor_name);
+    sprintf(unique_id, UNIQUE_ID_FORMAT, hostname, sensor_name);
+
+    struct json_object *object = json_object_new_object();
+    json_object_object_add(object, "name", json_object_new_string(sensor_name));
+    json_object_object_add(object, "state_topic", json_object_new_string(state_topic));
+    json_object_object_add(object, "unique_id", json_object_new_string(unique_id));
+    if (unit != NULL) {
+        json_object_object_add(object, "unit_of_measurement", json_object_new_string(unit));
+    }
+    if (class != NULL) {
+        json_object_object_add(object, "device_class", json_object_new_string(class));
+    }
+
+    json_object_object_add(object, "device", get_device(hostname, location));
+    const char *object_str = json_object_to_json_string(object);
+    sprintf(disco_string, DISCOVERY_TOPIC_FORMAT, "sensor", sensor_name, hostname);
+    ASSERT_SUCCESS(conn_publish(client, disco_string, object_str, strlen(object_str), QOS0, true),
+                   "Failed conn_publish");
+
+    PSENSOR sensor = malloc(sizeof(SENSOR));
+    sensor->topic = strdup(state_topic);
+    sensor->fn = fn;
+
+    sensor->next = sensorList;
+    sensorList = sensor;
 
     return SUCCESS;
 }
@@ -173,6 +201,22 @@ int conn_deregister_task(MQTTClient client, const char *taskname, void *fn) {
     }
 
     return SUCCESS;
+}
+
+int process_sensors(MQTTClient client)
+{
+    for (PSENSOR sensor = sensorList; sensor != NULL; sensor = sensor->next) {
+        char *data = sensor->fn();
+        if (data != NULL)
+        {
+            conn_publish(client, sensor->topic, data, strlen(data), QOS0, true);
+        }
+        else
+        {
+            conn_publish(client, sensor->topic, "", 0, QOS0, true);
+        }
+        free(data);
+    }
 }
 
 int conn_cleanup(MQTTClient *client) {
