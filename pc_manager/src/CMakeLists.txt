@@ -1,5 +1,6 @@
 add_executable(pc_manager
         main.c
+        loop.c
         conn.c
         config.c
         tasks/shutdown.c

@@ -19,3 +19,4 @@ struct json_object *get_device(const char *hostname, const char *location) {
     }
     return dev_object;
 }
+

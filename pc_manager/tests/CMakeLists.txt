@@ -3,7 +3,7 @@ enable_testing()
 add_executable(
         pc_manager_test
         system_test.cpp
-        ../src/main.c
+        ../src/loop.c
         ../src/conn.c
         ../src/config.c
         ../src/tasks/shutdown.c

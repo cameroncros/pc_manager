@@ -1,5 +1,5 @@
-#ifndef PC_MANAGER_MAIN_H
-#define PC_MANAGER_MAIN_H
+#ifndef PC_MANAGER_LOOP_H
+#define PC_MANAGER_LOOP_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -7,10 +7,10 @@ extern "C" {
 
 extern volatile int keep_running;
 
-int mainloop();
+int loop();
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif  // PC_MANAGER_MAIN_H
+#endif  // PC_MANAGER_LOOP_H

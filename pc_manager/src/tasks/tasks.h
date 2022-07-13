@@ -2,6 +2,7 @@
 #define PC_MANAGER_TASKS_H
 
 int task_reboot();
+
 int task_shutdown();
 
 #define REGISTER_TASK(task) \

@@ -17,17 +17,19 @@
 #define DISCOVERY_TOPIC_FORMAT "homeassistant/%s/%s/%s/config"
 
 typedef struct TASK {
-    char* topic;
+    char *topic;
+
     int (*fn)(void);
 
-    struct TASK* next;
+    struct TASK *next;
 } TASK, *PTASK;
 
 typedef struct SENSOR {
-    char* topic;
-    char* (*fn)(void);
+    char *topic;
 
-    struct SENSOR* next;
+    char *(*fn)(void);
+
+    struct SENSOR *next;
 } SENSOR, *PSENSOR;
 
 PTASK taskList = NULL;
@@ -38,13 +40,10 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
     printf("     topic: %s\n", topicName);
     printf("   message: %.*s\n", message->payloadlen, (char *) message->payload);
 
-    for (PTASK task = taskList; task != NULL; task = task->next)
-    {
-        if (strcmp(topicName, task->topic) == 0)
-        {
+    for (PTASK task = taskList; task != NULL; task = task->next) {
+        if (strcmp(topicName, task->topic) == 0) {
             int ret = task->fn();
-            if (ret != 0)
-            {
+            if (ret != 0) {
                 printf("Failed to execute :(\n");
             }
             break;
@@ -61,7 +60,7 @@ void connlost(void *context, char *cause) {
     printf("     cause: %s\n", cause);
 }
 
-int conn_init(MQTTClient *client, const char* address) {
+int conn_init(MQTTClient *client, const char *address) {
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
 
     ASSERT_SUCCESS(MQTTClient_create(client, address, "desktop_client",
@@ -78,7 +77,7 @@ int conn_init(MQTTClient *client, const char* address) {
     return SUCCESS;
 }
 
-int conn_subscribe(MQTTClient client, const char* topic, QOS qos, int (*fn)(void)) {
+int conn_subscribe(MQTTClient client, const char *topic, QOS qos, int (*fn)(void)) {
     printf("Subscribing to topic %s\nfor client %s using QoS%d\n\n", topic, CLIENTID, qos);
     ASSERT_SUCCESS(MQTTClient_subscribe(client, topic, qos),
                    "Failed to subscribe");
@@ -93,7 +92,7 @@ int conn_subscribe(MQTTClient client, const char* topic, QOS qos, int (*fn)(void
     return SUCCESS;
 }
 
-int conn_publish(MQTTClient client, const char* topic, const void* value, size_t value_len, QOS qos, bool retained) {
+int conn_publish(MQTTClient client, const char *topic, const void *value, size_t value_len, QOS qos, bool retained) {
     printf("Publishing to topic %s\nfor client %s using QoS%d\n\n", topic, CLIENTID, qos);
     ASSERT_SUCCESS(MQTTClient_publish(client, topic, value_len, value, qos, retained, NULL),
                    "Failed to publish");
@@ -127,7 +126,8 @@ int conn_register_task(MQTTClient client, const char *task_name, int (*fn)(void)
     return SUCCESS;
 }
 
-int conn_register_sensor(MQTTClient client, const char *sensor_name, const char* unit, const char* class, char* (*fn)(void)) {
+int conn_register_sensor(MQTTClient client, const char *sensor_name, const char *unit, const char *class,
+                         char *(*fn)(void)) {
     char hostname[HOST_NAME_MAX + 1] = {0};
     gethostname(hostname, sizeof(hostname));
     char *location = "Office";
@@ -173,23 +173,18 @@ int conn_deregister_task(MQTTClient client, const char *taskname, void *fn) {
     char disco_string[1024] = {0};
     sprintf(command_topic, COMMAND_TOPIC_FORMAT, location, hostname, taskname);
 
-    sprintf(disco_string, DISCOVERY_TOPIC_FORMAT , taskname, hostname);
+    sprintf(disco_string, DISCOVERY_TOPIC_FORMAT, taskname, hostname);
     ASSERT_SUCCESS(conn_publish(client, disco_string, "", 0, QOS0, true),
                    "Failed conn_publish");
     ASSERT_SUCCESS(MQTTClient_unsubscribe(client, command_topic), "Failed conn_unsubscribe");
 
     PTASK prev = NULL;
-    for (PTASK task = taskList; task != NULL; task = task->next)
-    {
-        if (strcmp(command_topic, task->topic) == 0)
-        {
+    for (PTASK task = taskList; task != NULL; task = task->next) {
+        if (strcmp(command_topic, task->topic) == 0) {
             // Remove from list
-            if (prev == NULL)
-            {
+            if (prev == NULL) {
                 taskList = task->next;
-            }
-            else
-            {
+            } else {
                 prev->next = task->next;
             }
 
@@ -204,16 +199,12 @@ int conn_deregister_task(MQTTClient client, const char *taskname, void *fn) {
     return SUCCESS;
 }
 
-int process_sensors(MQTTClient client)
-{
+int process_sensors(MQTTClient client) {
     for (PSENSOR sensor = sensorList; sensor != NULL; sensor = sensor->next) {
         char *data = sensor->fn();
-        if (data != NULL)
-        {
+        if (data != NULL) {
             conn_publish(client, sensor->topic, data, strlen(data), QOS0, true);
-        }
-        else
-        {
+        } else {
             conn_publish(client, sensor->topic, "", 0, QOS0, true);
         }
         free(data);
