@@ -1,5 +1,4 @@
 #include <stdbool.h>
-#define __USE_POSIX 1
 #include <limits.h>
 #include <unistd.h>
 #include <string.h>
