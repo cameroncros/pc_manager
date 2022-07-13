@@ -5,6 +5,7 @@
 #elif WIN32
 #  include <winsock.h>
 #  define HOST_NAME_MAX 1000
+#  define strdup _strdup
 #endif
 #include <string.h>
 #include <stdlib.h>
@@ -89,7 +90,7 @@ int conn_subscribe(MQTTClient client, const char *topic, QOS qos, int (*fn)(void
                    "Failed to subscribe");
 
     PTASK task = malloc(sizeof(TASK));
-    task->topic = _strdup(topic);
+    task->topic = strdup(topic);
     task->fn = fn;
 
     task->next = taskList;
@@ -162,7 +163,7 @@ int conn_register_sensor(MQTTClient client, const char *sensor_name, const char 
     json_object_put(object);
 
     PSENSOR sensor = malloc(sizeof(SENSOR));
-    sensor->topic = _strdup(state_topic);
+    sensor->topic = strdup(state_topic);
     sensor->fn = fn;
 
     sensor->next = sensorList;
