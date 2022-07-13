@@ -26,6 +26,10 @@ jobs:
       with:
         submodules: recursive
 
+    - name: version
+      run: echo `git symbolic-ref --short HEAD`-`git rev-parse --short HEAD`
+      id: version
+
     - name: Configure CMake
       # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
       # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
@@ -44,4 +48,35 @@ jobs:
     - name: Package
       working-directory: ${{github.workspace}}/build
       run: cpack
-      
+
+    - name: Release
+      uses: actions/create-release@v1
+      id: create_release
+      with:
+        draft: false
+        prerelease: false
+        release_name: ${{ steps.version.outputs.version }}
+        tag_name: ${{ github.ref }}
+        body_path: CHANGELOG.md
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Linux artifact
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{github.workspace}}/build/*.deb
+        asset_name: pc_manager_${{ steps.version.outputs.version }}.deb
+        asset_content_type: application/deb
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Upload Windows artifact
+      uses: actions/upload-release-asset@v1
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ${{github.workspace}}/build/*.msi
+        asset_name: pc_manager_${{ steps.version.outputs.version }}.msi
+        asset_content_type: application/msi
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
