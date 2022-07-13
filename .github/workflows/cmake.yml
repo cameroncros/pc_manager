@@ -49,34 +49,7 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: cpack
 
-    - name: Release
-      uses: actions/create-release@v1
-      id: create_release
+    - uses: actions/upload-artifact@v3
       with:
-        draft: false
-        prerelease: false
-        release_name: ${{ env.GITHUB_RUN_NUMBER }}
-        tag_name: ${{ env.GITHUB_RUN_NUMBER }}
-        body_path: CHANGELOG.md
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Upload Linux artifact
-      uses: actions/upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{github.workspace}}/build/*.deb
-        asset_name: pc_manager_${{ env.GITHUB_RUN_NUMBER }}.deb
-        asset_content_type: application/deb
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-    - name: Upload Windows artifact
-      uses: actions/upload-release-asset@v1
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ${{github.workspace}}/build/*.msi
-        asset_name: pc_manager_${{ env.GITHUB_RUN_NUMBER }}.msi
-        asset_content_type: application/msi
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        name: pc_manager
+        path: ${{github.workspace}}/build/*.[deb|msi]
