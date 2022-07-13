@@ -173,7 +173,7 @@ int conn_deregister_task(MQTTClient client, const char *taskname, void *fn) {
     char disco_string[1024] = {0};
     sprintf(command_topic, COMMAND_TOPIC_FORMAT, location, hostname, taskname);
 
-    sprintf(disco_string, DISCOVERY_TOPIC_FORMAT, taskname, hostname);
+    sprintf(disco_string, DISCOVERY_TOPIC_FORMAT, "sensor", taskname, hostname);
     ASSERT_SUCCESS(conn_publish(client, disco_string, "", 0, QOS0, true),
                    "Failed conn_publish");
     ASSERT_SUCCESS(MQTTClient_unsubscribe(client, command_topic), "Failed conn_unsubscribe");
