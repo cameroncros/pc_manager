@@ -7,7 +7,7 @@ extern "C" {
 
 extern volatile int keep_running;
 
-int loop();
+int loop(void);
 
 #ifdef __cplusplus
 }

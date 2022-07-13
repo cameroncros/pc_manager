@@ -1,7 +1,7 @@
 #ifndef PC_MANAGER_SENSORS_H
 #define PC_MANAGER_SENSORS_H
 
-char *sensor_time();
+char *sensor_time(void);
 
 #define REGISTER_SENSOR(sensor, unit, type) \
     ASSERT_SUCCESS(conn_register_sensor(client, #sensor, unit, type, sensor_##sensor), \

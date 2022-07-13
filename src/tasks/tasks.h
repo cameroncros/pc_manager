@@ -1,9 +1,9 @@
 #ifndef PC_MANAGER_TASKS_H
 #define PC_MANAGER_TASKS_H
 
-int task_reboot();
+int task_reboot(void);
 
-int task_shutdown();
+int task_shutdown(void);
 
 #define REGISTER_TASK(task) \
     ASSERT_SUCCESS(conn_register_task(client, #task, task_##task), \

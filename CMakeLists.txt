@@ -21,11 +21,15 @@ add_subdirectory(external/paho.mqtt.c EXCLUDE_FROM_ALL)
 include_directories(external/paho.mqtt.c/src)
 
 set(HAVE_ARC4RANDOM OFF CACHE INTERNAL "")
+set(BUILD_STATIC_LIBS ON CACHE INTERNAL "")
+set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
 add_subdirectory(external/json-c EXCLUDE_FROM_ALL)
 include_directories(${CMAKE_BINARY_DIR}/external/json-c/)
 include_directories(external/json-c)
 
+if (UNIX)
 add_compile_options(-Wall)
+endif()
 
 add_subdirectory(src)
 add_subdirectory(tests)
