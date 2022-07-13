@@ -153,6 +153,7 @@ int conn_register_sensor(MQTTClient client, const char *sensor_name, const char*
     sprintf(disco_string, DISCOVERY_TOPIC_FORMAT, "sensor", sensor_name, hostname);
     ASSERT_SUCCESS(conn_publish(client, disco_string, object_str, strlen(object_str), QOS0, true),
                    "Failed conn_publish");
+    json_object_put(object);
 
     PSENSOR sensor = malloc(sizeof(SENSOR));
     sensor->topic = strdup(state_topic);

@@ -1,0 +1,20 @@
+enable_testing()
+
+add_executable(
+        pc_manager_test
+        system_test.cpp
+        ../src/main.c
+        ../src/conn.c
+        ../src/config.c
+        ../src/tasks/shutdown.c
+        ../src/tasks/reboot.c
+        ../src/sensors/time.c
+)
+target_link_libraries(
+        pc_manager_test
+        GTest::gtest_main
+        paho-mqtt3c-static json-c bsd
+)
+
+include(GoogleTest)
+gtest_discover_tests(pc_manager_test)

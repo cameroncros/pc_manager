@@ -1,3 +1,13 @@
+include(FetchContent)
+FetchContent_Declare(
+        googletest
+        GIT_REPOSITORY https://github.com/google/googletest.git
+        GIT_TAG release-1.12.1
+)
+# For Windows: Prevent overriding the parent project's compiler/linker settings
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
+FetchContent_MakeAvailable(googletest)
+
 set(PAHO_BUILD_STATIC TRUE CACHE INTERNAL "")
 add_subdirectory(external/paho.mqtt.c EXCLUDE_FROM_ALL)
 include_directories(external/paho.mqtt.c/src)
@@ -6,16 +16,8 @@ add_subdirectory(external/json-c EXCLUDE_FROM_ALL)
 include_directories(${CMAKE_BINARY_DIR}/external/json-c/)
 include_directories(external/json-c)
 
-add_executable(pc_manager
-        src/main.c
-        src/conn.c
-        src/config.c
-        src/tasks/shutdown.c
-        src/tasks/reboot.c
-        src/sensors/time.c)
-target_link_libraries(pc_manager paho-mqtt3c-static json-c bsd)
-
-install(TARGETS pc_manager)
+add_subdirectory(src)
+add_subdirectory(tests)
 
 if (WIN32)
     SET(CPACK_GENERATOR "WIX")
