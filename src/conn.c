@@ -3,7 +3,7 @@
 #include <limits.h>
 #include <unistd.h>
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include "MQTTClient.h"
 #include "utils.h"
 #include "conn.h"
