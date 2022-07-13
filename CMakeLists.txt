@@ -25,6 +25,8 @@ add_subdirectory(external/json-c EXCLUDE_FROM_ALL)
 include_directories(${CMAKE_BINARY_DIR}/external/json-c/)
 include_directories(external/json-c)
 
+add_compile_options(-Wall)
+
 add_subdirectory(src)
 add_subdirectory(tests)
 

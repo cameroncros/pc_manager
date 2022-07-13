@@ -209,9 +209,11 @@ int process_sensors(MQTTClient client) {
         }
         free(data);
     }
+    return SUCCESS;
 }
 
 int conn_cleanup(MQTTClient *client) {
-    MQTTClient_disconnect(*client, TIMEOUT);
-    MQTTClient_destroy(client);
+    (void)MQTTClient_disconnect(*client, TIMEOUT);
+    (void)MQTTClient_destroy(client);
+    return SUCCESS;
 }

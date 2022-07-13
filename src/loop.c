@@ -34,5 +34,6 @@ int loop() {
         process_sensors(client);
     }
 
-    conn_cleanup(&client);
+    ASSERT_SUCCESS(conn_cleanup(&client), "Cleanup");
+    return SUCCESS;
 }
