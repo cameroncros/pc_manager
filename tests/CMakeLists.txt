@@ -13,7 +13,8 @@ add_executable(
 target_link_libraries(
         pc_manager_test
         GTest::gtest_main
-        paho-mqtt3c-static json-c bsd
+        paho-mqtt3c-static
+        json-c
 )
 
 include(GoogleTest)
