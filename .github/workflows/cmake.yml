@@ -27,7 +27,7 @@ jobs:
         submodules: recursive
 
     - name: version
-      run: echo `git symbolic-ref --short HEAD`-`git rev-parse --short HEAD`
+      run: echo ${{ env.GITHUB_RUN_NUMBER }}
       id: version
 
     - name: Configure CMake
