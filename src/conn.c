@@ -1,6 +1,6 @@
 
 #include <stdbool.h>
-#include <bits/local_lim.h>
+#include <limits.h>
 #include <unistd.h>
 #include <string.h>
 #include <malloc.h>
