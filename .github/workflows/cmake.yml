@@ -45,14 +45,6 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: cpack
 
-    - name: Create release
-      uses: "marvinpinto/action-automatic-releases@latest"
-      with:
-        repo_token: "${{ secrets.GITHUB_TOKEN }}"
-        automatic_release_tag: "latest"
-        prerelease: true
-        title: "Development Build"
-
     - name: Upload artifacts
       uses: actions/upload-artifact@v3
       with:
@@ -60,3 +52,11 @@ jobs:
           build/*.msi
           build/*.deb
         if-no-files-found: ignore
+
+    - name: Create release
+      uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        prerelease: true
+        title: "Development Build"
