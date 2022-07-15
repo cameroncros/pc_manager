@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.22)
 
 project(pc_manager)
 
+enable_testing()
+
 SET(CPACK_PACKAGE_VERSION_MAJOR "0")
 SET(CPACK_PACKAGE_VERSION_MINOR "0")
 SET(CPACK_PACKAGE_VERSION_PATCH "1")
@@ -21,6 +23,7 @@ if(NOT googletest_POPULATED)
 endif()
 
 set(PAHO_BUILD_STATIC TRUE CACHE INTERNAL "")
+set(PAHO_ENABLE_TESTING FALSE CACHE INTERNAL "")
 add_subdirectory(external/paho.mqtt.c EXCLUDE_FROM_ALL)
 include_directories(external/paho.mqtt.c/src)
 

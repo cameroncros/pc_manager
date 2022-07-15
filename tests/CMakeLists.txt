@@ -1,5 +1,3 @@
-enable_testing()
-
 add_executable(
         pc_manager_test
         system_test.cpp
