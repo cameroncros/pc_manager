@@ -45,7 +45,12 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: cpack
 
-    - uses: actions/upload-artifact@v3
+    - uses: "marvinpinto/action-automatic-releases@latest"
       with:
-        name: pc_manager
-        path: ${{github.workspace}}/build/*.[deb|msi]
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        prerelease: true
+        title: "Development Build"
+        files: |
+          build/*.deb
+          build/*.msi
