@@ -54,13 +54,22 @@ jobs:
         prerelease: true
         title: "Development Build"
 
-    - name: Upload release
+    - name: Upload release - Win
       id: upload-release-asset
       uses: actions/upload-release-asset@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: |
-          ./build/*.msi
-          ./build/*.deb
+        asset_path: ./build/*.msi
+        asset_name: Windows Installer
+
+    - name: Upload release - Lin
+      id: upload-release-asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./build/*.deb
+        asset_name: Linux Installer
