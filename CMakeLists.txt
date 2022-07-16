@@ -37,7 +37,7 @@ include_directories(external/json-c)
 if (UNIX)
     add_compile_options(-Wall)
     install(FILES install/pc_manager.service
-            DESTINATION /lib/systemd/system)
+            DESTINATION /usr/lib/systemd/system)
     configure_file(install/PKGBUILD.in PKGBUILD @ONLY)
 endif()
 

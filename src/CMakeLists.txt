@@ -11,4 +11,4 @@ target_link_libraries(
         paho-mqtt3c-static
         json-c)
 
-install(TARGETS pc_manager)
+install(TARGETS pc_manager DESTINATION /usr/local/bin)
