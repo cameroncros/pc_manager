@@ -63,6 +63,7 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./build/*.msi
         asset_name: Windows Installer
+        asset_content_type: application/msi
 
     - name: Upload release - Lin
       id: upload-release-asset-lin
@@ -73,3 +74,4 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./build/*.deb
         asset_name: Linux Installer
+        asset_content_type: application/zip
