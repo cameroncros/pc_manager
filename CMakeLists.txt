@@ -7,6 +7,12 @@ enable_testing()
 SET(CPACK_PACKAGE_VERSION_MAJOR "0")
 SET(CPACK_PACKAGE_VERSION_MINOR "0")
 SET(CPACK_PACKAGE_VERSION_PATCH "1")
+execute_process(
+        COMMAND git log -1 --format=%h
+        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
+        OUTPUT_VARIABLE GIT_HASH
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 include(FetchContent)
 FetchContent_Declare(

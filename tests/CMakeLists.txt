@@ -1,3 +1,5 @@
+include_directories(${CMAKE_BINARY_DIR}/generated/)
+
 add_executable(
         pc_manager_test
         system_test.cpp
@@ -7,6 +9,7 @@ add_executable(
         ../src/tasks/shutdown.c
         ../src/tasks/reboot.c
         ../src/sensors/time.c
+        ../src/sensors/version.c
 )
 target_link_libraries(
         pc_manager_test

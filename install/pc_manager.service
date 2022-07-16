@@ -1,5 +1,5 @@
 [Unit]
-Description=PC Manager - Connect a PC to Homeassistant via MQTT
+Description=PC Manager - Connect a PC to HomeAssistant via MQTT
 
 [Service]
 ExecStart=/usr/local/bin/pc_manager
