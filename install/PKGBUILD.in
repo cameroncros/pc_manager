@@ -1,0 +1,21 @@
+pkgname="pc_manager"
+pkgver="@CPACK_PACKAGE_VERSION_MAJOR@.@CPACK_PACKAGE_VERSION_MINOR@.@CPACK_PACKAGE_VERSION_PATCH@"
+pkgrel="1"
+pkgdesc="PC Manager - Connect a PC to Homeassistant via MQTT"
+arch=("x86_64" "x86" "arm" "arm64")
+licence=("GPL3")
+source=("git+https://github.com/cameroncros/pc_manager.git#@GIT_HASH@")
+sha512sums=('SKIP')
+
+build() {
+    cmake -B build -S "pc_manager"
+    cmake --build build
+}
+
+check() {
+    ctest --test-dir build --output-on-failure
+}
+
+package() {
+    DESTDIR="$pkgdir" cmake --install build
+}

@@ -35,7 +35,10 @@ include_directories(${CMAKE_BINARY_DIR}/external/json-c/)
 include_directories(external/json-c)
 
 if (UNIX)
-add_compile_options(-Wall)
+    add_compile_options(-Wall)
+    install(FILES install/pc_manager.service
+            DESTINATION /lib/systemd/system)
+    configure_file(install/PKGBUILD.in PKGBUILD @ONLY)
 endif()
 
 add_subdirectory(src)

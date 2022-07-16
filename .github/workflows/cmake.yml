@@ -54,3 +54,4 @@ jobs:
         files: |
           ./build/*.msi
           ./build/*.deb
+          ./build/PKGBUILD
