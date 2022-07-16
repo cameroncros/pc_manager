@@ -19,6 +19,18 @@ execute_process(
         OUTPUT_VARIABLE GIT_HASH
         OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+execute_process(
+        COMMAND git log -1 --format=%H
+        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/external/paho.mqtt.c
+        OUTPUT_VARIABLE GIT_HASH_PAHO
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+execute_process(
+        COMMAND git log -1 --format=%H
+        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/external/json-c
+        OUTPUT_VARIABLE GIT_HASH_JSONC
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 include(FetchContent)
 FetchContent_Declare(
