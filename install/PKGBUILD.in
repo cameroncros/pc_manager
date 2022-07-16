@@ -4,7 +4,7 @@ pkgrel="1"
 pkgdesc="PC Manager - Connect a PC to Homeassistant via MQTT"
 arch=("x86_64" "x86" "arm" "arm64")
 licence=("GPL3")
-source=("git+https://github.com/cameroncros/pc_manager.git#@GIT_HASH@"
+source=("git+https://github.com/cameroncros/pc_manager.git#commit=@GIT_HASH@"
         "git+https://github.com/eclipse/paho.mqtt.c.git"
         "git+https://github.com/json-c/json-c.git")
 sha512sums=('SKIP'
