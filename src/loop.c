@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
-#include <unistd.h>
+#if __linux__
+#  include <unistd.h>
+#endif
 #include <signal.h>
 
 #include "conn.h"
@@ -11,10 +13,11 @@
 volatile int keep_running = 1;
 
 void intHandler(int dummy) {
+    UNUSED(dummy);
     keep_running = 0;
 }
 
-int loop() {
+int loop(void) {
     keep_running = 1;
 
     MQTTClient client = {0};
@@ -34,5 +37,6 @@ int loop() {
         process_sensors(client);
     }
 
-    conn_cleanup(&client);
+    ASSERT_SUCCESS(conn_cleanup(&client), "Cleanup");
+    return SUCCESS;
 }

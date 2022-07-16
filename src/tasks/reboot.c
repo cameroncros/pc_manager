@@ -1,26 +1,24 @@
 #include "../conn.h"
 
-#if __linux
-
+#if __linux__
 #  include <unistd.h>
 #  include <linux/reboot.h>
 #  include <syscall.h>
 #  include <stdbool.h>
-
-#elif WIN32
+#elif _WIN32
 #  include <Windows.h>
 #  define bool BOOL
 #  define true TRUE
 #  define false FALSE
 #endif
 
-int task_reboot() {
-#if __linux
+int task_reboot(void) {
+#if __linux__
     if (syscall(SYS_reboot, LINUX_REBOOT_MAGIC1, LINUX_REBOOT_MAGIC2, LINUX_REBOOT_CMD_RESTART, 0) == -1) {
         perror("Failed with: ");
         return -1;
     }
-#elif WIN32
+#elif _WIN32
     HANDLE hToken;
     TOKEN_PRIVILEGES tkp;
 

@@ -1,9 +1,14 @@
-
 #include <stdbool.h>
-#include <bits/local_lim.h>
-#include <unistd.h>
+#include <limits.h>
+#ifdef __linux
+#  include <unistd.h>
+#elif WIN32
+#  include <winsock.h>
+#  define HOST_NAME_MAX 1000
+#  define strdup _strdup
+#endif
 #include <string.h>
-#include <malloc.h>
+#include <stdlib.h>
 #include "MQTTClient.h"
 #include "utils.h"
 #include "conn.h"
@@ -36,12 +41,13 @@ PTASK taskList = NULL;
 PSENSOR sensorList = NULL;
 
 int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *message) {
+    UNUSED(context);
     printf("Message arrived\n");
     printf("     topic: %s\n", topicName);
     printf("   message: %.*s\n", message->payloadlen, (char *) message->payload);
 
     for (PTASK task = taskList; task != NULL; task = task->next) {
-        if (strcmp(topicName, task->topic) == 0) {
+        if (strncmp(topicName, task->topic, topicLen) == 0) {
             int ret = task->fn();
             if (ret != 0) {
                 printf("Failed to execute :(\n");
@@ -56,6 +62,7 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
 }
 
 void connlost(void *context, char *cause) {
+    UNUSED(context);
     printf("\nConnection lost\n");
     printf("     cause: %s\n", cause);
 }
@@ -106,8 +113,8 @@ int conn_register_task(MQTTClient client, const char *task_name, int (*fn)(void)
     char command_topic[1024] = {0};
     char unique_id[1024] = {0};
     char disco_string[1024] = {0};
-    sprintf(command_topic, COMMAND_TOPIC_FORMAT, location, hostname, task_name);
-    sprintf(unique_id, UNIQUE_ID_FORMAT, hostname, task_name);
+    snprintf(command_topic, 1024, COMMAND_TOPIC_FORMAT, location, hostname, task_name);
+    snprintf(unique_id, 1024, UNIQUE_ID_FORMAT, hostname, task_name);
 
     struct json_object *object = json_object_new_object();
     json_object_object_add(object, "name", json_object_new_string(task_name));
@@ -117,7 +124,7 @@ int conn_register_task(MQTTClient client, const char *task_name, int (*fn)(void)
     json_object_object_add(object, "device", get_device(hostname, location));
 
     const char *object_str = json_object_to_json_string(object);
-    sprintf(disco_string, DISCOVERY_TOPIC_FORMAT, "button", task_name, hostname);
+    snprintf(disco_string, 1024, DISCOVERY_TOPIC_FORMAT, "button", task_name, hostname);
     ASSERT_SUCCESS(conn_publish(client, disco_string, object_str, strlen(object_str), QOS0, true),
                    "Failed conn_publish");
     ASSERT_SUCCESS(conn_subscribe(client, command_topic, QOS1, fn), "Failed conn_subscribe");
@@ -134,8 +141,8 @@ int conn_register_sensor(MQTTClient client, const char *sensor_name, const char 
     char state_topic[1024] = {0};
     char unique_id[1024] = {0};
     char disco_string[1024] = {0};
-    sprintf(state_topic, COMMAND_TOPIC_FORMAT, location, hostname, sensor_name);
-    sprintf(unique_id, UNIQUE_ID_FORMAT, hostname, sensor_name);
+    snprintf(state_topic, 1024,COMMAND_TOPIC_FORMAT, location, hostname, sensor_name);
+    snprintf(unique_id, 1024, UNIQUE_ID_FORMAT, hostname, sensor_name);
 
     struct json_object *object = json_object_new_object();
     json_object_object_add(object, "name", json_object_new_string(sensor_name));
@@ -150,7 +157,7 @@ int conn_register_sensor(MQTTClient client, const char *sensor_name, const char 
 
     json_object_object_add(object, "device", get_device(hostname, location));
     const char *object_str = json_object_to_json_string(object);
-    sprintf(disco_string, DISCOVERY_TOPIC_FORMAT, "sensor", sensor_name, hostname);
+    snprintf(disco_string, 1024, DISCOVERY_TOPIC_FORMAT, "sensor", sensor_name, hostname);
     ASSERT_SUCCESS(conn_publish(client, disco_string, object_str, strlen(object_str), QOS0, true),
                    "Failed conn_publish");
     json_object_put(object);
@@ -165,15 +172,15 @@ int conn_register_sensor(MQTTClient client, const char *sensor_name, const char 
     return SUCCESS;
 }
 
-int conn_deregister_task(MQTTClient client, const char *taskname, void *fn) {
+int conn_deregister_task(MQTTClient client, const char *taskname) {
     char hostname[HOST_NAME_MAX + 1] = {0};
     gethostname(hostname, sizeof(hostname));
     char *location = "Office";
     char command_topic[1024] = {0};
     char disco_string[1024] = {0};
-    sprintf(command_topic, COMMAND_TOPIC_FORMAT, location, hostname, taskname);
+    snprintf(command_topic, 1024, COMMAND_TOPIC_FORMAT, location, hostname, taskname);
 
-    sprintf(disco_string, DISCOVERY_TOPIC_FORMAT, taskname, hostname);
+    snprintf(disco_string, 1024, DISCOVERY_TOPIC_FORMAT, "sensor", taskname, hostname);
     ASSERT_SUCCESS(conn_publish(client, disco_string, "", 0, QOS0, true),
                    "Failed conn_publish");
     ASSERT_SUCCESS(MQTTClient_unsubscribe(client, command_topic), "Failed conn_unsubscribe");
@@ -209,9 +216,11 @@ int process_sensors(MQTTClient client) {
         }
         free(data);
     }
+    return SUCCESS;
 }
 
 int conn_cleanup(MQTTClient *client) {
-    MQTTClient_disconnect(*client, TIMEOUT);
-    MQTTClient_destroy(client);
+    (void)MQTTClient_disconnect(*client, TIMEOUT);
+    (void)MQTTClient_destroy(client);
+    return SUCCESS;
 }
