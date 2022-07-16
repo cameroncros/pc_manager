@@ -2,7 +2,7 @@
 Description=PC Manager - Connect a PC to Homeassistant via MQTT
 
 [Service]
-ExecStart=/usr/bin/pc_mananger
+ExecStart=/usr/local/bin/pc_mananger
 
 [Install]
 WantedBy=multi-user.target

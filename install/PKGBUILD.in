@@ -4,10 +4,19 @@ pkgrel="1"
 pkgdesc="PC Manager - Connect a PC to Homeassistant via MQTT"
 arch=("x86_64" "x86" "arm" "arm64")
 licence=("GPL3")
-source=("git+https://github.com/cameroncros/pc_manager.git#@GIT_HASH@")
-sha512sums=('SKIP')
+source=("git+https://github.com/cameroncros/pc_manager.git#@GIT_HASH@"
+        "git+https://github.com/eclipse/paho.mqtt.c.git"
+        "git+https://github.com/json-c/json-c.git")
+sha512sums=('SKIP'
+            'SKIP'
+            'SKIP')
 
 build() {
+    git submodule init
+    git config submodule.external/paho.mqtt.c.url "$srcdir/paho.mqtt.c"
+    git config submodule.external/json-c.url "$srcdir/json-c"
+    git submodule update --init
+
     cmake -B build -S "pc_manager"
     cmake --build build
 }
