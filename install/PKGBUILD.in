@@ -28,8 +28,3 @@ check() {
 package() {
     DESTDIR="$pkgdir" cmake --install build
 }
-
-post_install() {
-    systemd enable --now pc_manager
-    echo "To configure, edit `/etc/pc_manager.json`"
-}
