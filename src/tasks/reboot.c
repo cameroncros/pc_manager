@@ -1,15 +1,10 @@
 #include "../conn.h"
+#include "../utils.h"
 
 #if __linux__
 #  include <unistd.h>
 #  include <linux/reboot.h>
 #  include <syscall.h>
-#  include <stdbool.h>
-#elif _WIN32
-#  include <Windows.h>
-#  define bool BOOL
-#  define true TRUE
-#  define false FALSE
 #endif
 
 int task_reboot(void) {

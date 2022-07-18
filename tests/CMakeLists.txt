@@ -3,6 +3,7 @@ include_directories(${CMAKE_BINARY_DIR}/generated/)
 add_executable(
         pc_manager_test
         system_test.cpp
+        ../src/utils.c
         ../src/loop.c
         ../src/conn.c
         ../src/config.c

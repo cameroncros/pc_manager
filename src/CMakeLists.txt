@@ -3,6 +3,7 @@ include_directories(${CMAKE_BINARY_DIR}/generated/)
 
 add_executable(pc_manager
         main.c
+        utils.c
         loop.c
         conn.c
         config.c
