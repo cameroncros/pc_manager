@@ -1,15 +1,10 @@
 #ifndef PC_MANAGER_UTILS_H
 #define PC_MANAGER_UTILS_H
 
-
-#if __linux__
-#  include <stdbool.h>
-#elif _WIN32
+#include <stdbool.h>
+#if _WIN32
 #  include <Windows.h>
 #  define sleep(a) Sleep(a*1000)
-#  define bool BOOL
-#  define true TRUE
-#  define false FALSE
 #endif
 
 #define SUCCESS 0
@@ -18,14 +13,14 @@
 
 typedef enum {
     INFO,
-    WARNING,
-    ERROR
+    WARN,
+    ERR
 } LogTier;
 
 void logmsg(LogTier tier, char* filename, int lineno, int code, const char* string);
 #define logInfo(code, string) logmsg(INFO, __FILE__, __LINE__, code, string)
-#define logWarning(code, string) logmsg(WARNING, __FILE__, __LINE__, code, string)
-#define logError(code, string) logmsg(ERROR, __FILE__, __LINE__, code, string)
+#define logWarning(code, string) logmsg(WARN, __FILE__, __LINE__, code, string)
+#define logError(code, string) logmsg(ERR, __FILE__, __LINE__, code, string)
 
 #define ASSERT_SUCCESS(a, b) {                \
     int rc = (a);                             \
