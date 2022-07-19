@@ -31,6 +31,12 @@ execute_process(
         OUTPUT_VARIABLE GIT_HASH_JSONC
         OUTPUT_STRIP_TRAILING_WHITESPACE
 )
+execute_process(
+        COMMAND git log -1 --format=%H
+        WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/external/curl
+        OUTPUT_VARIABLE GIT_HASH_CURL
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -57,6 +63,11 @@ set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
 add_subdirectory(external/json-c EXCLUDE_FROM_ALL)
 include_directories(${CMAKE_BINARY_DIR}/external/json-c/)
 include_directories(external/json-c)
+
+set(BUILD_CURL_EXE OFF)
+set(BUILD_CURL_TESTS OFF)
+set(CURL_STATICLIB ON)
+set(OPENSSL_USE_STATIC_LIBS TRUE)
 
 if (UNIX)
     add_compile_options(-Wall)

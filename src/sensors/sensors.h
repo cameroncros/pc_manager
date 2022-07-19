@@ -1,7 +1,12 @@
 #ifndef PC_MANAGER_SENSORS_H
 #define PC_MANAGER_SENSORS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 char *sensor_time(void);
+
 char *sensor_version(void);
 
 #define REGISTER_SENSOR(sensor, unit, type) \
@@ -11,5 +16,9 @@ char *sensor_version(void);
 #define REGISTER_ALL_SENSORS \
     REGISTER_SENSOR(time, NULL, NULL); \
     REGISTER_SENSOR(version, NULL, NULL);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //PC_MANAGER_SENSORS_H

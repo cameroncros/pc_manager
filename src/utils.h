@@ -1,7 +1,12 @@
 #ifndef PC_MANAGER_UTILS_H
 #define PC_MANAGER_UTILS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdbool.h>
+
 #if _WIN32
 #  include <Windows.h>
 #  define sleep(a) Sleep(a*1000)
@@ -17,7 +22,8 @@ typedef enum {
     ERR
 } LogTier;
 
-void logmsg(LogTier tier, char* filename, int lineno, int code, const char* string);
+void logmsg(LogTier tier, char *filename, int lineno, int code, const char *string);
+
 #define logInfo(code, string) logmsg(INFO, __FILE__, __LINE__, code, string)
 #define logWarning(code, string) logmsg(WARN, __FILE__, __LINE__, code, string)
 #define logError(code, string) logmsg(ERR, __FILE__, __LINE__, code, string)
@@ -29,5 +35,9 @@ void logmsg(LogTier tier, char* filename, int lineno, int code, const char* stri
         return rc;                            \
     }                                         \
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif //PC_MANAGER_UTILS_H

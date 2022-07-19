@@ -9,12 +9,14 @@ add_executable(pc_manager
         config.c
         tasks/shutdown.c
         tasks/reboot.c
+        tasks/update.c
         sensors/time.c
         sensors/version.c)
 target_link_libraries(
         pc_manager
         paho-mqtt3c-static
-        json-c)
+        json-c
+        libcurl)
 
 if (WIN32)
     install(TARGETS pc_manager)
