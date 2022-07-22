@@ -46,14 +46,24 @@ if(NOT googletest_POPULATED)
     add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
+
+set(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
+set(LINK_SEARCH_START_STATIC TRUE)
+set(LINK_SEARCH_END_STATIC TRUE)
+
+set(SHARED_LIBS OFF)
+set(STATIC_LIBS ON)
+
 set(PAHO_BUILD_STATIC TRUE CACHE INTERNAL "")
 set(PAHO_ENABLE_TESTING FALSE CACHE INTERNAL "")
+set(USE_LIBIDN2 FALSE CACHE INTERNAL "")
 add_subdirectory(external/paho.mqtt.c EXCLUDE_FROM_ALL)
 include_directories(external/paho.mqtt.c/src)
 
 set(HAVE_ARC4RANDOM OFF CACHE INTERNAL "")
 set(BUILD_STATIC_LIBS ON CACHE INTERNAL "")
 set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
+set(DISABLE_EXTRA_LIBS ON CACHE INTERNAL "")
 add_subdirectory(external/json-c EXCLUDE_FROM_ALL)
 include_directories(${CMAKE_BINARY_DIR}/external/json-c/)
 include_directories(external/json-c)
