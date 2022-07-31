@@ -74,11 +74,6 @@ add_subdirectory(external/json-c EXCLUDE_FROM_ALL)
 include_directories(${CMAKE_BINARY_DIR}/external/json-c/)
 include_directories(external/json-c)
 
-set(BUILD_CURL_EXE OFF)
-set(BUILD_CURL_TESTS OFF)
-set(CURL_STATICLIB ON)
-set(OPENSSL_USE_STATIC_LIBS TRUE)
-
 if (UNIX)
     add_compile_options(-Wall)
     install(FILES install/pc_manager.service

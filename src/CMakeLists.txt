@@ -1,5 +1,6 @@
-configure_file(sensors/version.h.in ${CMAKE_BINARY_DIR}/generated/sensors/version.h @ONLY)
-include_directories(${CMAKE_BINARY_DIR}/generated/)
+configure_file(inc/version.h.in ${CMAKE_BINARY_DIR}/generated/inc/version.h @ONLY)
+include_directories(${CMAKE_BINARY_DIR}/generated/inc/)
+include_directories(inc)
 
 add_executable(pc_manager
         main.c
@@ -11,12 +12,15 @@ add_executable(pc_manager
         tasks/reboot.c
         tasks/update.c
         sensors/time.c
-        sensors/version.c)
+        sensors/version.c
+        sensors/update.c)
 target_link_libraries(
         pc_manager
         paho-mqtt3c-static
         json-c
-        libcurl)
+        ssl
+        crypto
+        curl)
 
 if (WIN32)
     install(TARGETS pc_manager)

@@ -1,4 +1,5 @@
-include_directories(${CMAKE_BINARY_DIR}/generated/)
+include_directories(${CMAKE_BINARY_DIR}/generated/inc)
+include_directories(../src/inc)
 
 add_executable(
         pc_manager_test
@@ -13,13 +14,16 @@ add_executable(
         ../src/tasks/update.c
         ../src/sensors/time.c
         ../src/sensors/version.c
+        ../src/sensors/update.c
 )
 target_link_libraries(
         pc_manager_test
         GTest::gtest_main
         paho-mqtt3c-static
         json-c
-        libcurl
+        curl
+        ssl
+        crypto
 )
 
 include(GoogleTest)

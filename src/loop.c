@@ -7,8 +7,8 @@
 
 #include "conn.h"
 #include "utils.h"
-#include "tasks/tasks.h"
-#include "sensors/sensors.h"
+#include "tasks.h"
+#include "sensors.h"
 
 volatile int keep_running = 1;
 

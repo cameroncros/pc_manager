@@ -1,4 +1,4 @@
-#include "sensors/version.h"
+#include "version.h"
 #include <string.h>
 
 char *sensor_version() {
