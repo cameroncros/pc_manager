@@ -2,10 +2,11 @@ name: CMake
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - '**'
   pull_request:
-    branches: [ "main" ]
-
+    branches:
+      - '**'
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
   BUILD_TYPE: Release
@@ -48,6 +49,7 @@ jobs:
     - name: Release
       id: create_release
       uses: softprops/action-gh-release@v1
+      if: github.ref == 'refs/heads/main'
       with:
         draft: true
         name: Development Build
