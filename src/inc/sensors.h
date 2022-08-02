@@ -5,9 +5,9 @@
 extern "C" {
 #endif
 
-char *sensor_time(void);
-char *sensor_version(void);
-char *sensor_update(void);
+char *sensor_time(time_t now);
+char *sensor_version(time_t now);
+char *sensor_update(time_t now);
 
 #define REGISTER_SENSOR(sensor, unit, type) \
     ASSERT_SUCCESS(conn_register_sensor(client, #sensor, unit, type, sensor_##sensor), \

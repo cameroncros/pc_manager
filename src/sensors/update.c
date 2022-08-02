@@ -6,6 +6,8 @@
 #include "json.h"
 #include "version.h"
 
+time_t last_update_check = 0;
+
 bool check_for_update(char download_url[MAX_URL_LENGTH + 1]) {
     int ret = SUCCESS;
     curl_buffer buffer = {NULL, 0};
@@ -43,13 +45,20 @@ bool check_for_update(char download_url[MAX_URL_LENGTH + 1]) {
     }
     cleanup:
     // Check if new version, and if a valid download URL exists.
-    new_version = (release_version != NULL && strcmp(release_version, VERSION) == 0) && (strlen(download_url) == 0) && (ret == SUCCESS);
+    new_version = (ret == SUCCESS) &&
+            (release_version != NULL && strcmp(release_version, VERSION) == 0) &&
+            (download_url != NULL && strlen(download_url) == 0);
     json_object_put(release_array);
     free(buffer.data);
     return new_version;
 }
 
-char *sensor_update() {
+char *sensor_update(time_t now) {
+    if (now - last_update_check < 5000)
+    {
+        return NULL;
+    }
+    last_update_check = now;
     char download_url[MAX_URL_LENGTH + 1];
     if (check_for_update(download_url)) {
         char *buffer = strdup(VERSION " - " GIT);
