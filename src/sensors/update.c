@@ -33,7 +33,7 @@ bool check_for_update(char download_url[MAX_URL_LENGTH + 1]) {
 #if __linux__
         if (strcmp(json_object_get_string(json_object_object_get(asset, "name")), "PKGBUILD") == 0) {
 #elif _WIN32
-        if (strstr(json_object_get_string(json_object_object_get(asset, "name")), "msi") != NULL) {
+            if (strstr(json_object_get_string(json_object_object_get(asset, "name")), "msi") != NULL) {
 #endif
             release_url = json_object_get_string(json_object_object_get(asset, "browser_download_url"));
             strncpy(download_url, release_url, MAX_URL_LENGTH);
@@ -43,8 +43,17 @@ bool check_for_update(char download_url[MAX_URL_LENGTH + 1]) {
     }
     cleanup:
     // Check if new version, and if a valid download URL exists.
-    new_version = (strcmp(release_version, VERSION) == 0) && (strlen(download_url) == 0) && (ret == SUCCESS);
+    new_version = (release_version != NULL && strcmp(release_version, VERSION) == 0) && (strlen(download_url) == 0) && (ret == SUCCESS);
     json_object_put(release_array);
     free(buffer.data);
     return new_version;
+}
+
+char *sensor_update() {
+    char download_url[MAX_URL_LENGTH + 1];
+    if (check_for_update(download_url)) {
+        char *buffer = strdup(VERSION " - " GIT);
+        return buffer;
+    }
+    return NULL;
 }

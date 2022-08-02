@@ -1,5 +1,3 @@
-configure_file(inc/version.h.in ${CMAKE_BINARY_DIR}/generated/inc/version.h @ONLY)
-include_directories(${CMAKE_BINARY_DIR}/generated/inc/)
 include_directories(inc)
 
 add_executable(pc_manager

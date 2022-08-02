@@ -7,6 +7,10 @@ enable_testing()
 SET(CPACK_PACKAGE_VERSION_MAJOR "0")
 SET(CPACK_PACKAGE_VERSION_MINOR "0")
 SET(CPACK_PACKAGE_VERSION_PATCH "1")
+
+configure_file(src/inc/version.h.in ${CMAKE_BINARY_DIR}/generated/inc/version.h @ONLY)
+include_directories(${CMAKE_BINARY_DIR}/generated/inc/)
+
 execute_process(
         COMMAND git log -1 --format=%h
         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}

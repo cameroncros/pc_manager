@@ -14,12 +14,12 @@
 #include "MQTTClient.h"
 #include "utils.h"
 #include "conn.h"
-#include "config.h"
+#include "conf.h"
 
-#define CLIENTID    "ExampleClientSub2"
 #define TIMEOUT     10000
 
-#define COMMAND_TOPIC_FORMAT "%s/%s/%s"
+#define COMMAND_TOPIC_FORMAT "%s/%s/command/%s"
+#define SENSOR_TOPIC_FORMAT "%s/%s/sensor/%s"
 #define AVAILABILITY_TOPIC_FORMAT "%s/%s/availability"
 #define UNIQUE_ID_FORMAT "%s-%s"
 #define DISCOVERY_TOPIC_FORMAT "homeassistant/%s/%s/%s/config"
@@ -179,7 +179,7 @@ int conn_register_sensor(MQTTClient client, const char *sensor_name, const char 
     char availability_topic[MAX_MQTT_TOPIC] = {0};
     char unique_id[MAX_MQTT_TOPIC] = {0};
     char disco_string[MAX_MQTT_TOPIC] = {0};
-    snprintf(state_topic, MAX_MQTT_TOPIC, COMMAND_TOPIC_FORMAT, LOCATION, hostname, sensor_name);
+    snprintf(state_topic, MAX_MQTT_TOPIC, SENSOR_TOPIC_FORMAT, LOCATION, hostname, sensor_name);
     ASSERT_SUCCESS(get_availability_topic(LOCATION, hostname, availability_topic), "Failed to get availability topic");
     snprintf(unique_id, MAX_MQTT_TOPIC, UNIQUE_ID_FORMAT, hostname, sensor_name);
 

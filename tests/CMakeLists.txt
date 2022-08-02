@@ -1,4 +1,3 @@
-include_directories(${CMAKE_BINARY_DIR}/generated/inc)
 include_directories(../src/inc)
 
 add_executable(
