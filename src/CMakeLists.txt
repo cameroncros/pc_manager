@@ -16,9 +16,9 @@ target_link_libraries(
         pc_manager
         paho-mqtt3c-static
         json-c
+        curl
         ssl
-        crypto
-        curl)
+        crypto)
 
 if (WIN32)
     install(TARGETS pc_manager)

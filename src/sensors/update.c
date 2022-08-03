@@ -12,12 +12,12 @@ bool check_for_update(char download_url[MAX_URL_LENGTH + 1]) {
     int ret = SUCCESS;
     curl_buffer buffer = {NULL, 0};
     bool new_version = false;
-    struct json_object *release_array;
-    struct json_object *release;
-    struct json_object *assets;
-    struct json_object *asset;
-    const char *release_version;
-    const char *release_url;
+    struct json_object *release_array = NULL;
+    struct json_object *release = NULL;
+    struct json_object *assets = NULL;
+    struct json_object *asset = NULL;
+    const char *release_version = NULL;
+    const char *release_url = NULL;
 
     ASSERT_SUCCESS_CLEANUP(download_mem(RELEASE_URL, &buffer), "Failed to get releases info");
 

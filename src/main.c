@@ -3,6 +3,6 @@
 
 int main(int argc, char **argv) {
     UNUSED(argc);
-    UNUSED(argc);
+    UNUSED(argv);
     loop();
 }

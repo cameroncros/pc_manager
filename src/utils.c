@@ -30,9 +30,8 @@ size_t curl_save_mem(void *contents, size_t size, size_t nmemb, void *userp) {
 }
 
 int download_mem(const char *url, curl_buffer *buffer) {
-    CURL *curl;
-    CURLcode res;
-    curl = curl_easy_init();
+    CURL *curl = curl_easy_init();
+    CURLcode res = CURLE_OK;
     if (curl) {
         curl_easy_setopt(curl, CURLOPT_URL, url);
         curl_easy_setopt(curl, CURLOPT_WRITEDATA, buffer);

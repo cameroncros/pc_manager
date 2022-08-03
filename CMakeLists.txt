@@ -81,6 +81,7 @@ include_directories(external/json-c)
 set(BUILD_CURL_EXE OFF CACHE INTERNAL "")
 add_subdirectory(external/curl EXCLUDE_FROM_ALL)
 include_directories(external/curl/include)
+link_directories(${CMAKE_BINARY_DIR}/external/curl/lib)
 
 if (UNIX)
     add_compile_options(-Wall)

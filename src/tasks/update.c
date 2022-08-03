@@ -10,21 +10,22 @@ int install_update_arch(char update_url[MAX_URL_LENGTH + 1]) {
     curl_buffer buffer = {0};
     char tmpdir[PATH_MAX] = "/tmp/pc_manager_XXXXXX";
     ASSERT_TRUE_CLEANUP(mkdtemp(tmpdir) != 0, "Failed to get temporary folder name");
-    logInfo(SUCCESS, tmpdir);
     ASSERT_TRUE_CLEANUP(chdir(tmpdir) == 0, "Failed to switch to temporary folder");
 
     ASSERT_SUCCESS_CLEANUP(download_mem(update_url, &buffer), "Failed to download update");
     FILE *f = fopen("PKGBUILD", "wb");
-    fwrite(buffer.data, buffer.size, 1, f);
-    fclose(f);
+    ASSERT_TRUE_CLEANUP(f != NULL, "Failed to open PKGBUILD for writing");
+    ASSERT_TRUE_CLEANUP(fwrite(buffer.data, buffer.size, 1, f) == buffer.size, "Failed to write PKGBUILD");
+    ASSERT_TRUE_CLEANUP(fclose(f) == 0, "Failed to close PKGBUILD");
 
     ASSERT_TRUE_CLEANUP(system("makepkg") == 0, "Failed to build");
     ASSERT_TRUE_CLEANUP(system("pacman -U *.tar.xz") == 0, "Failed to install");
     ASSERT_TRUE_CLEANUP(system("systemctl restart pc_manager") == 0, "Failed to install");
 
 cleanup:
-    chdir("/tmp");
-    rmdir(tmpdir);
+    if (!chdir("/tmp")) {
+        rmdir(tmpdir);
+    }
     return ret;
 }
 
