@@ -20,7 +20,8 @@ target_link_libraries(
         GTest::gtest_main
         paho-mqtt3c-static
         json-c
-        curl
+        libcurl
+        z
         ssl
         crypto
 )

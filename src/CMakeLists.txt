@@ -16,7 +16,8 @@ target_link_libraries(
         pc_manager
         paho-mqtt3c-static
         json-c
-        curl
+        libcurl
+        z
         ssl
         crypto)
 
