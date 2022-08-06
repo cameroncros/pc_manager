@@ -12,14 +12,28 @@ add_executable(pc_manager
         sensors/time.c
         sensors/version.c
         sensors/update.c)
-target_link_libraries(
-        pc_manager
-        paho-mqtt3c-static
-        json-c
-        libcurl
-        z
-        ssl
-        crypto)
+
+if (WIN32)
+    target_link_libraries(
+            pc_manager
+            paho-mqtt3c-static
+            json-c
+            libcurl
+    )
+elseif (UNIX)
+    target_link_libraries(
+            pc_manager
+            paho-mqtt3c-static
+            json-c
+            libcurl
+            z
+            ssl
+            crypto
+    )
+endif ()
+
+
+
 
 if (WIN32)
     install(TARGETS pc_manager)

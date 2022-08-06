@@ -26,10 +26,10 @@ TEST_F(UpdateTest, DISABLED_check_for_update) {
 #elif _WIN32
     EXPECT_NE(nullptr, strstr(url, ".msi")) << "URL: " << url;
 #endif
-
     EXPECT_NE(nullptr, strstr(url, "github.com")) << "URL: " << url;
 }
 
+#if __linux__
 TEST_F(UpdateTest, DISABLED_install_update_arch) {
     char url[MAX_URL_LENGTH + 1] = {};
     check_for_update(url);
@@ -38,3 +38,15 @@ TEST_F(UpdateTest, DISABLED_install_update_arch) {
 
     EXPECT_EQ(ERROR_GENERIC, install_update_arch(url));
 }
+#endif
+
+#if _WIN32
+TEST_F(UpdateTest, install_update_win32) {
+    char url[MAX_URL_LENGTH + 1] = {};
+    check_for_update(url);
+    EXPECT_NE(nullptr, strstr(url, ".msi")) << "URL: " << url;
+    EXPECT_NE(nullptr, strstr(url, "github.com")) << "URL: " << url;
+
+    EXPECT_EQ(ERROR_GENERIC, install_update_win32(url));
+}
+#endif

@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <string.h>
+#if _WIN32
+#include <winsock2.h>
+#endif
 #include <curl/curl.h>
 #include <stdlib.h>
 #include "utils.h"
@@ -10,7 +13,6 @@ void logmsg(LogTier tier, char* filename, int lineno, int code, const char* stri
     fprintf(stderr, "%s:%i :Error[%i]: %s\n", filename, lineno, code, string);
 }
 
-/* callback for curl fetch */
 size_t curl_save_mem(void *contents, size_t size, size_t nmemb, void *userp) {
     size_t realsize = size * nmemb;                             /* calculate buffer size */
     curl_buffer *p = (curl_buffer *) userp;   /* cast pointer to fetch struct */
@@ -40,6 +42,45 @@ int download_mem(const char *url, curl_buffer *buffer) {
         curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, true);
 
         res = curl_easy_perform(curl);
+        /* always cleanup */
+        curl_easy_cleanup(curl);
+    }
+    if (res == CURLE_OK) return SUCCESS;
+    return ERROR_GENERIC;
+}
+
+size_t curl_save_file(void *contents, size_t size, size_t nmemb, void *userp) {
+    size_t realsize = size * nmemb;                             /* calculate buffer size */
+    FILE *fp = (FILE*) userp;   /* cast pointer to fetch struct */
+
+    size_t written = 0;
+    while (written < realsize)
+    {
+        size_t wrote = fwrite(contents + written, 1, realsize - written, fp);
+        if (wrote == 0)
+        {
+            return 0;
+        }
+        written += wrote;
+    }
+
+    return written;
+}
+
+int download_file(const char* url, const char* filename)
+{
+    CURL *curl = curl_easy_init();
+    CURLcode res = CURLE_OK;
+    if (curl) {
+        FILE *fp = fopen(filename, "wb");
+        curl_easy_setopt(curl, CURLOPT_URL, url);
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp);
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_save_file);
+        curl_easy_setopt(curl, CURLOPT_USERAGENT, "pc_manager/1.0");
+        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, true);
+
+        res = curl_easy_perform(curl);
+        fclose(fp);
         /* always cleanup */
         curl_easy_cleanup(curl);
     }

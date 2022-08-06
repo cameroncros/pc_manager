@@ -15,16 +15,27 @@ add_executable(
         ../src/sensors/version.c
         ../src/sensors/update.c
 )
-target_link_libraries(
-        pc_manager_test
-        GTest::gtest_main
-        paho-mqtt3c-static
-        json-c
-        libcurl
-        z
-        ssl
-        crypto
-)
+if (WIN32)
+    target_link_libraries(
+            pc_manager_test
+            GTest::gtest_main
+            paho-mqtt3c-static
+            json-c
+            libcurl
+    )
+elseif (UNIX)
+    target_link_libraries(
+            pc_manager_test
+            GTest::gtest_main
+            paho-mqtt3c-static
+            json-c
+            libcurl
+            z
+            ssl
+            crypto
+    )
+endif ()
+
 
 include(GoogleTest)
 gtest_discover_tests(pc_manager_test)

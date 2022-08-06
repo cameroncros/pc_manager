@@ -1,10 +1,14 @@
 #include "update.h"
 #include "utils.h"
+#if _WIN32
+#include <winsock2.h>
+#endif
 #include <curl/curl.h>
 #include <malloc.h>
 #include <unistd.h>
 #include <stdlib.h>
 
+#if __linux__
 int install_update_arch(char update_url[MAX_URL_LENGTH + 1]) {
     int ret = SUCCESS;
     curl_buffer buffer = {0};
@@ -28,6 +32,25 @@ cleanup:
     }
     return ret;
 }
+#elif _WIN32
+int install_update_win32(char update_url[MAX_URL_LENGTH + 1]) {
+    int ret = SUCCESS;
+    curl_buffer buffer = {0};
+    char tmpdir[PATH_MAX] = {};
+    DWORD numchars = GetTempPathA(sizeof(tmpdir), tmpdir);
+    ASSERT_TRUE_CLEANUP(numchars != 0, "Temppath too short");
+    ASSERT_TRUE_CLEANUP(numchars < sizeof(tmpdir), "Temppath too short");
+    ASSERT_TRUE_CLEANUP(chdir(tmpdir) == 0, "Failed to switch to temporary folder");
+
+    ASSERT_SUCCESS_CLEANUP(download_file(update_url, "installer.msi"), "Failed to download update");
+
+    ASSERT_TRUE_CLEANUP(system("msiexec /i installer.msi /passive") == 0, "Failed to run installer");
+
+cleanup:
+    rmdir(tmpdir);
+    return ret;
+}
+#endif
 
 int task_update(void) {
     char update_url[MAX_URL_LENGTH + 1] = {0};
@@ -37,6 +60,6 @@ int task_update(void) {
 #if __linux__
     return install_update_arch(update_url);
 #elif _WIN32
-    return GENERIC_ERROR;
+    return install_update_win32(update_url);;
 #endif
 }
