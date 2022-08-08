@@ -1,11 +1,14 @@
 #include "update.h"
 #include "utils.h"
 #if _WIN32
-#include <winsock2.h>
+#include <direct.h>
+#define PATH_MAX MAX_PATH
 #endif
 #include <curl/curl.h>
 #include <malloc.h>
+#if __linux__
 #include <unistd.h>
+#endif
 #include <stdlib.h>
 
 #if __linux__
@@ -36,7 +39,7 @@ cleanup:
 int install_update_win32(char update_url[MAX_URL_LENGTH + 1]) {
     int ret = SUCCESS;
     curl_buffer buffer = {0};
-    char tmpdir[PATH_MAX] = {};
+    char tmpdir[PATH_MAX] = { 0 };
     DWORD numchars = GetTempPathA(sizeof(tmpdir), tmpdir);
     ASSERT_TRUE_CLEANUP(numchars != 0, "Temppath too short");
     ASSERT_TRUE_CLEANUP(numchars < sizeof(tmpdir), "Temppath too short");

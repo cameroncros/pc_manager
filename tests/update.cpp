@@ -18,7 +18,7 @@ TEST_F(UpdateTest, download_mem) {
     free(buffer.data);
 }
 
-TEST_F(UpdateTest, DISABLED_check_for_update) {
+TEST_F(UpdateTest, check_for_update) {
     char url[MAX_URL_LENGTH + 1] = {};
     check_for_update(url);
 #if __linux__
@@ -41,7 +41,7 @@ TEST_F(UpdateTest, DISABLED_install_update_arch) {
 #endif
 
 #if _WIN32
-TEST_F(UpdateTest, install_update_win32) {
+TEST_F(UpdateTest, DISABLED_install_update_win32) {
     char url[MAX_URL_LENGTH + 1] = {};
     check_for_update(url);
     EXPECT_NE(nullptr, strstr(url, ".msi")) << "URL: " << url;

@@ -56,7 +56,7 @@ size_t curl_save_file(void *contents, size_t size, size_t nmemb, void *userp) {
     size_t written = 0;
     while (written < realsize)
     {
-        size_t wrote = fwrite(contents + written, 1, realsize - written, fp);
+        size_t wrote = fwrite((char*)contents + written, 1, realsize - written, fp);
         if (wrote == 0)
         {
             return 0;
