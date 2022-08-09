@@ -9,12 +9,12 @@ extern "C" {
 #include <stdlib.h>
 
 #if _WIN32
-#  include <Windows.h>
-#  define sleep(a) Sleep(a*1000)
+#  include <windows.h>
+#  define sleep(a) Sleep((a)*1000)
 #endif
 
 #define SUCCESS 0
-#define ERROR_GENERIC -1
+#define ERROR_GENERIC (-1)
 #define UNUSED(a) (void)(a)
 
 typedef enum {
