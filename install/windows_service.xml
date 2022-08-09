@@ -1,0 +1,10 @@
+<CPackWiXPatch>
+    <CPackWiXFragment Id="CM_CP_bin.pc_manager.exe">
+        <ServiceInstall
+                Id="ServiceInstaller" Type="ownProcess" Vital="yes"
+                Name="PC Manager" DisplayName="PC Manager"
+                Description="Monitoring and management Jobs" Start="auto"
+                Account="LocalSystem" ErrorControl="ignore" Interactive="no"/>
+    </CPackWiXFragment>
+</CPackWiXPatch>
+

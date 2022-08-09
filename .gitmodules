@@ -4,3 +4,9 @@
 [submodule "external/json-c"]
 	path = external/json-c
 	url = https://github.com/json-c/json-c.git
+[submodule "external/curl"]
+	path = external/curl
+	url = https://github.com/curl/curl.git
+[submodule "external/openssl-cmake"]
+	path = external/openssl-cmake
+	url = https://github.com/viaduck/openssl-cmake.git

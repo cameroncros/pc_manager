@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
-#include "../src/loop.h"
-#include "../src/utils.h"
+#include "loop.h"
+#include "utils.h"
 #if _WIN32
 #  include <Windows.h>
 #endif

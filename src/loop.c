@@ -7,8 +7,8 @@
 
 #include "conn.h"
 #include "utils.h"
-#include "tasks/tasks.h"
-#include "sensors/sensors.h"
+#include "tasks.h"
+#include "sensors.h"
 
 volatile int keep_running = 1;
 
@@ -20,23 +20,26 @@ void intHandler(int dummy) {
 int loop(void) {
     keep_running = 1;
 
-    MQTTClient client = {0};
-
-    ASSERT_SUCCESS(conn_init(&client, "192.168.1.100"), "Failed conn_init");
-
-    // Tasks
-    REGISTER_ALL_TASKS;
-
-    // Sensors
-    REGISTER_ALL_SENSORS;
-
     signal(SIGINT, intHandler);
 
-    while (keep_running) {
-        sleep(1);
-        process_sensors(client);
-    }
+    MQTTClient client = {0};
+    while (keep_running)
+    {
 
-    ASSERT_SUCCESS(conn_cleanup(&client), "Cleanup");
+        ASSERT_SUCCESS(conn_init(&client, "192.168.1.100"), "Failed conn_init");
+
+        // Tasks
+        REGISTER_ALL_TASKS;
+
+        // Sensors
+        REGISTER_ALL_SENSORS;
+
+        while (is_connected) {
+            sleep(1);
+            process_sensors(client);
+        }
+
+        ASSERT_SUCCESS(conn_cleanup(&client), "Cleanup");
+    }
     return SUCCESS;
 }

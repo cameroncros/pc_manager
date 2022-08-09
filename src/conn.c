@@ -2,7 +2,9 @@
 #include <limits.h>
 
 #ifdef __linux
+
 #  include <unistd.h>
+
 #elif WIN32
 #  include <winsock.h>
 #  define HOST_NAME_MAX 1000
@@ -11,15 +13,16 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <time.h>
 #include "MQTTClient.h"
 #include "utils.h"
 #include "conn.h"
-#include "config.h"
+#include "conf.h"
 
-#define CLIENTID    "ExampleClientSub2"
 #define TIMEOUT     10000
 
-#define COMMAND_TOPIC_FORMAT "%s/%s/%s"
+#define COMMAND_TOPIC_FORMAT "%s/%s/command/%s"
+#define SENSOR_TOPIC_FORMAT "%s/%s/sensor/%s"
 #define AVAILABILITY_TOPIC_FORMAT "%s/%s/availability"
 #define UNIQUE_ID_FORMAT "%s-%s"
 #define DISCOVERY_TOPIC_FORMAT "homeassistant/%s/%s/%s/config"
@@ -35,13 +38,14 @@ typedef struct TASK {
 typedef struct SENSOR {
     char *topic;
 
-    char *(*fn)(void);
+    char *(*fn)(time_t now);
 
     struct SENSOR *next;
 } SENSOR, *PSENSOR;
 
 PTASK taskList = NULL;
 PSENSOR sensorList = NULL;
+volatile bool is_connected = false;
 
 #define LOCATION "Office"
 
@@ -70,6 +74,7 @@ void connlost(void *context, char *cause) {
     UNUSED(context);
     printf("\nConnection lost\n");
     printf("     cause: %s\n", cause);
+    is_connected = false;
 }
 
 int get_availability_topic(const char *location, const char *hostname, char buffer[MAX_MQTT_TOPIC]) {
@@ -85,12 +90,12 @@ int get_availability_topic(const char *location, const char *hostname, char buff
 }
 
 int conn_init(MQTTClient *client, const char *address) {
-    ASSERT_SUCCESS(MQTTClient_create(client, address, "desktop_client",
-                                     MQTTCLIENT_PERSISTENCE_NONE, NULL),
-                   "Failed MQTTClient_create");
+    ASSERT_SUCCESS_CLEANUP(MQTTClient_create(client, address, "desktop_client",
+                                             MQTTCLIENT_PERSISTENCE_NONE, NULL),
+                           "Failed MQTTClient_create");
 
-    ASSERT_SUCCESS(MQTTClient_setCallbacks(*client, NULL, connlost, msgarrvd, NULL),
-                   "Failed to set callbacks");
+    ASSERT_SUCCESS_CLEANUP(MQTTClient_setCallbacks(*client, NULL, connlost, msgarrvd, NULL),
+                           "Failed to set callbacks");
 
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
     MQTTClient_willOptions will_opts = MQTTClient_willOptions_initializer;
@@ -99,7 +104,8 @@ int conn_init(MQTTClient *client, const char *address) {
     gethostname(hostname, sizeof(hostname));
 
     char availability_topic[MAX_MQTT_TOPIC] = {0};
-    ASSERT_SUCCESS(get_availability_topic(LOCATION, hostname, availability_topic), "Failed to get availability topic");
+    ASSERT_SUCCESS_CLEANUP(get_availability_topic(LOCATION, hostname, availability_topic),
+                           "Failed to get availability topic");
     will_opts.topicName = availability_topic;
     will_opts.message = OFFLINE;
     will_opts.qos = QOS2;
@@ -109,12 +115,14 @@ int conn_init(MQTTClient *client, const char *address) {
     conn_opts.keepAliveInterval = 20;
     conn_opts.cleansession = 1;
     conn_opts.will = &will_opts;
-    ASSERT_SUCCESS(MQTTClient_connect(*client, &conn_opts),
-                   "Failed to connect");
+    ASSERT_SUCCESS_CLEANUP(MQTTClient_connect(*client, &conn_opts),
+                           "Failed to connect");
 
     // Mustn't send the availability topic with '\0'
-    ASSERT_SUCCESS(conn_publish(*client, availability_topic, ONLINE, sizeof(ONLINE)-1, QOS0, false),
-                   "Failed to set availablility");
+    ASSERT_SUCCESS_CLEANUP(conn_publish(*client, availability_topic, ONLINE, sizeof(ONLINE) - 1, QOS0, false),
+                           "Failed to set availablility");
+    is_connected = true;
+    cleanup:
     return SUCCESS;
 }
 
@@ -135,9 +143,12 @@ int conn_subscribe(MQTTClient client, const char *topic, QOS qos, int (*fn)(void
 
 int conn_publish(MQTTClient client, const char *topic, const void *value, size_t value_len, QOS qos, bool retained) {
     printf("Publishing to topic [%s] with [QoS%d]\n", topic, qos);
-    ASSERT_SUCCESS(MQTTClient_publish(client, topic, value_len, value, qos, retained, NULL),
-                   "Failed to publish");
+    ASSERT_SUCCESS_CLEANUP(MQTTClient_publish(client, topic, value_len, value, qos, retained, NULL),
+                           "Failed to publish");
     return SUCCESS;
+    cleanup:
+    is_connected = false;
+    return ERROR_GENERIC;
 }
 
 int conn_register_task(MQTTClient client, const char *task_name, int (*fn)(void)) {
@@ -172,14 +183,14 @@ int conn_register_task(MQTTClient client, const char *task_name, int (*fn)(void)
 }
 
 int conn_register_sensor(MQTTClient client, const char *sensor_name, const char *unit, const char *class,
-                         char *(*fn)(void)) {
+                         char *(*fn)(time_t)) {
     char hostname[HOST_NAME_MAX + 1] = {0};
     gethostname(hostname, sizeof(hostname));
     char state_topic[MAX_MQTT_TOPIC] = {0};
     char availability_topic[MAX_MQTT_TOPIC] = {0};
     char unique_id[MAX_MQTT_TOPIC] = {0};
     char disco_string[MAX_MQTT_TOPIC] = {0};
-    snprintf(state_topic, MAX_MQTT_TOPIC, COMMAND_TOPIC_FORMAT, LOCATION, hostname, sensor_name);
+    snprintf(state_topic, MAX_MQTT_TOPIC, SENSOR_TOPIC_FORMAT, LOCATION, hostname, sensor_name);
     ASSERT_SUCCESS(get_availability_topic(LOCATION, hostname, availability_topic), "Failed to get availability topic");
     snprintf(unique_id, MAX_MQTT_TOPIC, UNIQUE_ID_FORMAT, hostname, sensor_name);
 
@@ -246,12 +257,11 @@ int conn_deregister_task(MQTTClient client, const char *taskname) {
 }
 
 int process_sensors(MQTTClient client) {
+    time_t now = time(NULL);
     for (PSENSOR sensor = sensorList; sensor != NULL; sensor = sensor->next) {
-        char *data = sensor->fn();
+        char *data = sensor->fn(now);
         if (data != NULL) {
             conn_publish(client, sensor->topic, data, strlen(data), QOS0, true);
-        } else {
-            conn_publish(client, sensor->topic, "", 0, QOS0, true);
         }
         free(data);
     }
