@@ -1,12 +1,9 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(pc_manager)
+project(pc_manager VERSION 1.0.0)
 
 enable_testing()
 
-SET(CPACK_PACKAGE_VERSION_MAJOR "0")
-SET(CPACK_PACKAGE_VERSION_MINOR "0")
-SET(CPACK_PACKAGE_VERSION_PATCH "1")
 SET(CMAKE_BUILD_TYPE Release)
 
 configure_file(src/inc/version.h.in ${CMAKE_BINARY_DIR}/generated/inc/version.h @ONLY)
