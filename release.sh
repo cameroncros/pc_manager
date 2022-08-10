@@ -8,7 +8,7 @@ if [ "$(which py > /dev/null 2>&1)" = 0 ]; then
 else
     echo "Running in Linux"
     PYTHON=python3
-    python3 -m venv venvgit
+    python3 -m venv venv
     . venv/bin/activate
 fi
 
