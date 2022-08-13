@@ -17,6 +17,7 @@ env:
 jobs:
   build:
     name: Test Commit
+    timeout-minutes: 30
 
     # The CMake configure and build commands are platform agnostic and should work equally well on Windows or Mac.
     # You can convert this to a matrix build if you need cross-platform coverage.
@@ -25,67 +26,71 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
+        os: [ ubuntu-latest, windows-latest ]
 
     steps:
-    - uses: actions/checkout@v3
-      with:
-        submodules: recursive
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
 
-    - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      - name: Configure CMake
+        # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+        # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
 
-    - name: Build
-      # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target pc_manager
+      - name: Build
+        # Build your program with the given configuration
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target pc_manager
 
-    - name: Build Test
-      # Build your program with the given configuration
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target pc_manager_test
+      - name: Build Test
+        # Build your program with the given configuration
+        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target pc_manager_test
 
-    - uses: actions/upload-artifact@v3
-      with:
-        name: my-artifact
-        path: ${{github.workspace}}/build/**/pc_manager*
+      - uses: actions/upload-artifact@v3
+        with:
+          name: my-artifact
+          path: ${{github.workspace}}/build/**/pc_manager*
 
-    - name: Test
-      working-directory: ${{github.workspace}}/build
-      # Execute tests defined by the CMake configuration.
-      # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-      run: ctest -C ${{env.BUILD_TYPE}}
-    
-    - name: Package
-      working-directory: ${{github.workspace}}/build
-      run: cpack
+      - name: Test
+        working-directory: ${{github.workspace}}/build
+        # Execute tests defined by the CMake configuration.
+        # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+        run: ctest -C ${{env.BUILD_TYPE}}
 
-    - name: Release
-      id: create_dev_release
-      uses: softprops/action-gh-release@v1
-      if: github.ref == 'refs/heads/main'
-      with:
-        draft: true
-        name: Development Build
-        files: |
-          ./build/*.msi
-          ./build/*.deb
-          ./build/PKGBUILD
+      - name: Package
+        working-directory: ${{github.workspace}}/build
+        run: cpack
 
-    - name: Release name
-      id: release_name
-      run: echo "${{ github.ref }}" | cut -d "/" -f3
+      - name: Get the branch
+        id: get_branch
+        run: echo ::set-output name=BRANCH::${GITHUB_REF#refs/heads/}
 
-    - name: Release
-      id: create_release
-      uses: softprops/action-gh-release@v1
-      if: startsWith(github.ref, 'refs/tags/v')
-      with:
-        tag_name: ${{ github.ref }}
-        name: Release ${{ needs.build.outputs.release_name }}
-        draft: false
-        prerelease: false
-        files: |
-          ./build/*.msi
-          ./build/*.deb
-          ./build/PKGBUILD
+      - name: Get the tag
+        id: get_tag
+        run: echo ::set-output name=TAG::${GITHUB_REF#refs/tags/}
+
+      - name: Release
+        id: create_dev_release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v') != true
+        with:
+          draft: true
+          name: "Development Build - ${{ steps.get_branch.outputs.BRANCH }}"
+          files: |
+            ./build/*.msi
+            ./build/*.deb
+            ./build/PKGBUILD
+
+      - name: Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          tag_name: ${{ github.ref }}
+          name: "Release - ${{ steps.get_tag.outputs.TAG }}"
+          draft: false
+          prerelease: false
+          files: |
+            ./build/*.msi
+            ./build/*.deb
+            ./build/PKGBUILD
