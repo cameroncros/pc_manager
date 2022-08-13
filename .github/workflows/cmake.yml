@@ -72,13 +72,17 @@ jobs:
           ./build/*.deb
           ./build/PKGBUILD
 
+    - name: Release name
+      id: release_name
+      run: echo "${{ github.ref }}" | cut -d "/" -f3
+
     - name: Release
       id: create_release
       uses: softprops/action-gh-release@v1
       if: startsWith(github.ref, 'refs/tags/v')
       with:
         tag_name: ${{ github.ref }}
-        name: Release ${{ echo "${{ github.ref }}" | cut -d "/" -f3 }}
+        name: Release ${{ needs.build.outputs.release_name }}
         draft: false
         prerelease: false
         files: |
