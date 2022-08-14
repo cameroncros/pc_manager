@@ -36,7 +36,7 @@ TEST_F(UpdateTest, DISABLED_install_update_arch) {
     EXPECT_NE(nullptr, strstr(url, "PKGBUILD")) << "URL: " << url;
     EXPECT_NE(nullptr, strstr(url, "github.com")) << "URL: " << url;
 
-    EXPECT_EQ(ERROR_GENERIC, install_update_arch(url));
+    EXPECT_EQ(SUCCESS, install_update_arch(url));
 }
 #endif
 

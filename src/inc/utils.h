@@ -31,6 +31,7 @@ typedef struct {
 } curl_buffer;
 
 int download_mem(const char *url, curl_buffer *buffer);
+int download_file(const char* url, const char* filename);
 
 #define logInfo(code, string) logmsg(INFO, __FILE__, __LINE__, code, string)
 #define logWarning(code, string) logmsg(WARN, __FILE__, __LINE__, code, string)
