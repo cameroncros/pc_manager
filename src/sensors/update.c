@@ -32,8 +32,8 @@ bool check_for_update(char download_url[MAX_URL_LENGTH + 1]) {
         release_version = json_object_get_string(json_object_object_get(release, "tag_name"));
 
         assets = json_object_object_get(release, "assets");
-        for (size_t i = 0; i < json_object_array_length(assets); i++) {
-            asset = json_object_array_get_idx(assets, i);
+        for (size_t j = 0; j < json_object_array_length(assets); j++) {
+            asset = json_object_array_get_idx(assets, j);
 #if __linux__
             if (strcmp(json_object_get_string(json_object_object_get(asset, "name")), "PKGBUILD") == 0) {
 #elif _WIN32
