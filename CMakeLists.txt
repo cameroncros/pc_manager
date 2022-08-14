@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-project(pc_manager VERSION 1.10.0)
+project(pc_manager VERSION 1.11.0)
 
 enable_testing()
 
