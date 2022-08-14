@@ -24,24 +24,26 @@ bool check_for_update(char download_url[MAX_URL_LENGTH + 1]) {
     release_array = json_tokener_parse(buffer.data);
     ASSERT_TRUE_CLEANUP((release_array != NULL && json_object_is_type(release_array, json_type_array)),
                         "Not a valid release json");
-    release = json_object_array_get_idx(release_array, 0);
-    ASSERT_TRUE_CLEANUP(release != NULL, "No releases??");
+    size_t num_releases = json_object_array_length(release_array);
+    for (size_t i = 0; i < num_releases; i++) {
+        release = json_object_array_get_idx(release_array, i);
+        ASSERT_TRUE_CLEANUP(release != NULL, "No releases??");
 
-    release_version = json_object_get_string(json_object_object_get(release, "tag_name"));
+        release_version = json_object_get_string(json_object_object_get(release, "tag_name"));
 
-    assets = json_object_object_get(release, "assets");
-    for (size_t i = 0; i < json_object_array_length(assets); i++) {
-        asset = json_object_array_get_idx(assets, i);
+        assets = json_object_object_get(release, "assets");
+        for (size_t i = 0; i < json_object_array_length(assets); i++) {
+            asset = json_object_array_get_idx(assets, i);
 #if __linux__
-        if (strcmp(json_object_get_string(json_object_object_get(asset, "name")), "PKGBUILD") == 0) {
+            if (strcmp(json_object_get_string(json_object_object_get(asset, "name")), "PKGBUILD") == 0) {
 #elif _WIN32
             if (strstr(json_object_get_string(json_object_object_get(asset, "name")), "msi") != NULL) {
 #endif
-            release_url = json_object_get_string(json_object_object_get(asset, "browser_download_url"));
-            strncpy(download_url, release_url, MAX_URL_LENGTH);
-            break;
+                release_url = json_object_get_string(json_object_object_get(asset, "browser_download_url"));
+                strncpy(download_url, release_url, MAX_URL_LENGTH);
+                break;
+            }
         }
-
     }
     cleanup:
     // Check if new version, and if a valid download URL exists.
