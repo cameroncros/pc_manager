@@ -46,11 +46,6 @@ jobs:
         # Build your program with the given configuration
         run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target pc_manager_test
 
-      - uses: actions/upload-artifact@v3
-        with:
-          name: my-artifact
-          path: ${{github.workspace}}/build/**/pc_manager*
-
       - name: Test
         working-directory: ${{github.workspace}}/build
         # Execute tests defined by the CMake configuration.
@@ -61,25 +56,74 @@ jobs:
         working-directory: ${{github.workspace}}/build
         run: cpack
 
+      - uses: actions/upload-artifact@master
+        if: matrix.os == 'windows-latest'
+        with:
+          name: pc_manager.msi
+          path: build/*.msi
+      - uses: actions/upload-artifact@master
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          name: pc_manager.deb
+          path: build/*.deb
+      - uses: actions/upload-artifact@master
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          name: PKGBUILD
+          path: build/PKGBUILD
+
+  release-dev:
+    runs-on: ubuntu-latest
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v') != true
+    steps:
       - name: Get the branch
         id: get_branch
         run: echo ::set-output name=BRANCH::${GITHUB_REF#refs/heads/}
 
-      - name: Get the tag
-        id: get_tag
-        run: echo ::set-output name=TAG::${GITHUB_REF#refs/tags/}
+      - uses: actions/download-artifact@master
+        with:
+          name: pc_manager.msi
+          path: ./
+      - uses: actions/download-artifact@master
+        with:
+          name: pc_manager.deb
+          path: ./
+      - uses: actions/download-artifact@master
+        with:
+          name: PKGBUILD
+          path: ./
 
       - name: Release
         id: create_dev_release
         uses: softprops/action-gh-release@v1
-        if: startsWith(github.ref, 'refs/tags/v') != true
         with:
           draft: true
           name: "Development Build - ${{ steps.get_branch.outputs.BRANCH }}"
           files: |
-            ./build/*.msi
-            ./build/*.deb
-            ./build/PKGBUILD
+            ./*
+
+  release-actual:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - name: Get the tag
+        id: get_tag
+        run: echo ::set-output name=TAG::${GITHUB_REF#refs/tags/}
+
+      - uses: actions/download-artifact@master
+        with:
+          name: pc_manager.msi
+          path: ./
+      - uses: actions/download-artifact@master
+        with:
+          name: pc_manager.deb
+          path: ./
+      - uses: actions/download-artifact@master
+        with:
+          name: PKGBUILD
+          path: ./
 
       - name: Release
         id: create_release
@@ -91,6 +135,4 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            ./build/*.msi
-            ./build/*.deb
-            ./build/PKGBUILD
+            ./*

@@ -8,11 +8,11 @@
 #include <malloc.h>
 #if __linux__
 #include <unistd.h>
-#endif
-#include <stdlib.h>
-#include <sys/stat.h>
 #include <sys/wait.h>
 #include <pwd.h>
+#include <sys/stat.h>
+#endif
+#include <stdlib.h>
 
 #if __linux__
 int build_package(char update_url[MAX_URL_LENGTH + 1])
