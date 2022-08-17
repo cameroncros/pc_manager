@@ -1,0 +1,12 @@
+version: "2"
+services:
+  machine_1:
+    image: pc_manager_machine
+  machine_2:
+    image: pc_manager_machine
+  machine_3:
+    image: pc_manager_machine
+  machine_4:
+    image: pc_manager_machine
+  machine_5:
+    image: pc_manager_machine
