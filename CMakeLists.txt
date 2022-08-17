@@ -6,9 +6,6 @@ enable_testing()
 
 SET(CMAKE_BUILD_TYPE Release)
 
-configure_file(src/inc/version.h.in ${CMAKE_BINARY_DIR}/generated/inc/version.h @ONLY)
-include_directories(${CMAKE_BINARY_DIR}/generated/inc/)
-
 execute_process(
         COMMAND git log -1 --format=%h
         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
@@ -54,6 +51,8 @@ if(NOT googletest_POPULATED)
     add_subdirectory(${googletest_SOURCE_DIR} ${googletest_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
+configure_file(src/inc/version.h.in ${CMAKE_BINARY_DIR}/generated/inc/version.h @ONLY)
+include_directories(${CMAKE_BINARY_DIR}/generated/inc/)
 
 set(CMAKE_FIND_LIBRARY_SUFFIXES .a ${CMAKE_FIND_LIBRARY_SUFFIXES})
 set(LINK_SEARCH_START_STATIC TRUE)

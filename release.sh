@@ -22,3 +22,6 @@ git pull
 git merge dev
 bump2version minor
 git push origin main --tags
+git checkout dev
+git merge main
+git push origin dev
