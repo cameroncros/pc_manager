@@ -14,7 +14,7 @@ struct json_object *get_device(const char *hostname, const char *location) {
     json_object_object_add(dev_object, "suggested_area", json_object_new_string(location));
     {
         struct json_object *ident_array = json_object_new_array();
-        json_object_array_add(ident_array, json_object_new_string("pc_manager"));
+        json_object_array_add(ident_array, json_object_new_string(hostname));
         json_object_object_add(dev_object, "identifiers", ident_array);
     }
     return dev_object;

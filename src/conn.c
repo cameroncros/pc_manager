@@ -90,7 +90,15 @@ int get_availability_topic(const char *location, const char *hostname, char buff
 }
 
 int conn_init(MQTTClient *client, const char *address) {
-    ASSERT_SUCCESS_CLEANUP(MQTTClient_create(client, address, "desktop_client",
+    int ret = SUCCESS;
+#define ID_PREFIX "pc_manager_"
+    char id[HOST_NAME_MAX + sizeof(ID_PREFIX) + 1] = {0};
+    char hostname[HOST_NAME_MAX + 1] = {0};
+    gethostname(hostname, sizeof(hostname));
+
+    int len = snprintf(id, HOST_NAME_MAX + sizeof(ID_PREFIX), ID_PREFIX "%s", hostname);
+    ASSERT_TRUE_CLEANUP(len == (sizeof(ID_PREFIX)-1 + strlen(hostname)), "Failed to format ID");
+    ASSERT_SUCCESS_CLEANUP(MQTTClient_create(client, address, id,
                                              MQTTCLIENT_PERSISTENCE_NONE, NULL),
                            "Failed MQTTClient_create");
 
@@ -99,9 +107,6 @@ int conn_init(MQTTClient *client, const char *address) {
 
     MQTTClient_connectOptions conn_opts = MQTTClient_connectOptions_initializer;
     MQTTClient_willOptions will_opts = MQTTClient_willOptions_initializer;
-
-    char hostname[HOST_NAME_MAX + 1] = {0};
-    gethostname(hostname, sizeof(hostname));
 
     char availability_topic[MAX_MQTT_TOPIC] = {0};
     ASSERT_SUCCESS_CLEANUP(get_availability_topic(LOCATION, hostname, availability_topic),
@@ -123,7 +128,7 @@ int conn_init(MQTTClient *client, const char *address) {
                            "Failed to set availablility");
     is_connected = true;
     cleanup:
-    return SUCCESS;
+    return ret;
 }
 
 int conn_subscribe(MQTTClient client, const char *topic, QOS qos, int (*fn)(void)) {

@@ -4,8 +4,6 @@ project(pc_manager VERSION 1.13.0)
 
 enable_testing()
 
-SET(CMAKE_BUILD_TYPE Release)
-
 execute_process(
         COMMAND git log -1 --format=%h
         WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}
