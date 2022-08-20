@@ -1,5 +1,21 @@
 version: "2"
 services:
+  homeassistant:
+    container_name: homeassistant
+    image: "ghcr.io/home-assistant/home-assistant:stable"
+    restart: unless-stopped
+    privileged: true
+    network_mode: host
+    ports:
+      - 8123:8123
+  mqtt:
+    container_name: homeassistant-mqtt
+    image: eclipse-mosquitto:latest
+    restart: unless-stopped
+    networks:
+      default:
+        ipv4_address: 192.168.40.100
+
   machine_1:
     image: pc_manager_machine
   machine_2:
@@ -10,3 +26,10 @@ services:
     image: pc_manager_machine
   machine_5:
     image: pc_manager_machine
+
+networks:
+  default:
+    internal: true
+    ipam:
+      config:
+        - subnet: 192.168.40.0/24
