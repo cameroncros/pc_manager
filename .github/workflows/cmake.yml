@@ -60,17 +60,17 @@ jobs:
         if: matrix.os == 'windows-latest'
         with:
           name: pc_manager.msi
-          path: build/install/*.msi
+          path: build/*.msi
       - uses: actions/upload-artifact@master
         if: matrix.os == 'ubuntu-latest'
         with:
           name: pc_manager.deb
-          path: build/install/*.deb
+          path: build/*.deb
       - uses: actions/upload-artifact@master
         if: matrix.os == 'ubuntu-latest'
         with:
           name: PKGBUILD
-          path: build/install/PKGBUILD
+          path: build/PKGBUILD
 
   release-dev:
     runs-on: ubuntu-latest

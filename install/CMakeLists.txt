@@ -2,7 +2,7 @@ if (UNIX)
     add_compile_options(-Wall)
     install(FILES pc_manager.service
             DESTINATION /usr/lib/systemd/system)
-    configure_file(PKGBUILD.in PKGBUILD @ONLY)
+    configure_file(PKGBUILD.in ../PKGBUILD @ONLY)
 endif()
 
 if (WIN32)
