@@ -7,6 +7,8 @@ extern "C" {
 
 struct json_object *get_device(const char *hostname, const char *location);
 
+int get_server_addr(char addr[2048]);
+
 #ifdef __cplusplus
 }
 #endif

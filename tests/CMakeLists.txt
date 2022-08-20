@@ -17,7 +17,8 @@ include_directories(../src/inc)
 add_executable(
         pc_manager_test
         system_test.cpp
-        update.cpp
+        update_test.cpp
+        config_test.cpp
         ../src/utils.c
         ../src/loop.c
         ../src/conn.c
