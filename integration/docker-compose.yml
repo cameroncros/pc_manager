@@ -18,14 +18,24 @@ services:
 
   machine_1:
     image: pc_manager_machine
+    environment:
+      - MQTT_ADDR=192.168.40.100
   machine_2:
     image: pc_manager_machine
+    environment:
+      - MQTT_ADDR=192.168.40.100
   machine_3:
     image: pc_manager_machine
+    environment:
+      - MQTT_ADDR=192.168.40.100
   machine_4:
     image: pc_manager_machine
+    environment:
+      - MQTT_ADDR=192.168.40.100
   machine_5:
     image: pc_manager_machine
+    environment:
+      - MQTT_ADDR=192.168.40.100
 
 networks:
   default:
