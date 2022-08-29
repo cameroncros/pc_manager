@@ -1,6 +1,6 @@
-configure_file(docker-compose.yml docker-compose.yml COPYONLY)
-configure_file(Dockerfile Dockerfile COPYONLY)
-configure_file(test_integration.py test_integration.py COPYONLY)
+file(COPY docker-compose.yml DESTINATION .)
+file(COPY Dockerfile DESTINATION .)
+file(COPY test_integration.py DESTINATION .)
 
 add_custom_target(
         integration_setup
@@ -30,13 +30,12 @@ add_custom_command(
 # Build command line to run py.test.
 set(PYTEST
         ${CMAKE_CURRENT_BINARY_DIR}/venv/bin/python3 -m pytest
-        )
-
+)
 
 add_custom_target(Tests ALL
         DEPENDS venv.stamp
         SOURCES requirements.txt
-        )
+)
 
 add_test(
         NAME integration
