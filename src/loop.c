@@ -36,7 +36,7 @@ int loop(void) {
         // Sensors
         REGISTER_ALL_SENSORS;
 
-        while (is_connected) {
+        while (keep_running && is_connected) {
             sleep(1);
             process_sensors(client);
         }
