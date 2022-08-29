@@ -5,11 +5,19 @@ from os import system
 
 from pyshadow.main import Shadow
 from selenium import webdriver
-from selenium.webdriver import ActionChains, Keys
+from selenium.webdriver import ActionChains, Keys, DesiredCapabilities
 
 
 class TestIntegration(unittest.TestCase):
     driver = None
+
+    def setUp(self) -> None:
+        system('docker-compose down')
+        system('docker-compose up -d')
+        time.sleep(10)
+
+    def tearDown(self) -> None:
+        system('docker-compose up -d')
 
     def _page_wait_loaded(self):
         while True:
@@ -18,9 +26,6 @@ class TestIntegration(unittest.TestCase):
             if page_state == 'complete':
                 return
 
-    def _spinup(self):
-        system('docker-compose down')
-        system('docker-compose up -d')
 
     def _first_time_setup(self):
         print("Attempting to onboard", file=sys.stderr)
@@ -128,11 +133,7 @@ class TestIntegration(unittest.TestCase):
         devices = shadow.find_elements('div.mdc-data-table__row')
         return len(devices)
 
-    def test_integration(self):
-        self._spinup()
-
-        self.driver = webdriver.Firefox()
-        self.driver.implicitly_wait(3)
+    def _test_integration(self):
 
         authed = False
         while not authed:
@@ -159,3 +160,30 @@ class TestIntegration(unittest.TestCase):
         self.assertEqual(self._list_devices(), num_devices + 5)
 
         # FUTURE: Do more device validation
+
+    def test_firefox(self):
+        self.driver = webdriver.Firefox()
+        self.driver.implicitly_wait(3)
+        self._test_integration()
+
+    def DISABLED_test_chrome(self):
+        import chromedriver_binary  # Adds chromedriver binary to path
+        self.driver = webdriver.Chrome()
+        self.driver.implicitly_wait(3)
+        self._test_integration()
+
+    def DISABLED_test_docker_headless(self):
+        import docker
+        client = docker.from_env()
+        selenium_cont = client.containers.run('selenium/standalone-chrome',
+                                              shm_size='2g',
+                                              network_mode='host',
+                                              name="selenium-chrome",
+                                              detach=True)
+        try:
+            self.driver = webdriver.Remote('http://localhost:4444/wd/hub', DesiredCapabilities.CHROME)
+            self.driver.set_window_size(1280, 1024)
+            self.driver.implicitly_wait(3)
+            self._test_integration()
+        finally:
+            selenium_cont.remove(force=True)
