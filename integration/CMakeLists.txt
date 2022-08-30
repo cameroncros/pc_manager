@@ -32,8 +32,7 @@ if (UNIX)
             ${CMAKE_CURRENT_BINARY_DIR}/venv/bin/python3 -m pytest
     )
 
-
-    add_custom_target(Tests ALL
+    add_custom_target(test_env_setup ALL
             DEPENDS venv.stamp
             SOURCES requirements.txt
     )
@@ -42,5 +41,10 @@ if (UNIX)
             NAME integration
             COMMAND
                 ${PYTEST}
+    )
+
+    add_dependencies(
+            pc_manager_test
+            test_env_setup
     )
 endif()
