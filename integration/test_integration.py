@@ -12,8 +12,8 @@ class TestIntegration(unittest.TestCase):
     driver = None
 
     def setUp(self) -> None:
-        system('docker-compose down')
-        system('docker-compose up -d')
+        self.assertEqual(0, system('docker-compose down'))
+        self.assertEqual(0, system('docker-compose up -d'))
         time.sleep(10)
 
     def tearDown(self) -> None:
@@ -161,7 +161,7 @@ class TestIntegration(unittest.TestCase):
 
         # FUTURE: Do more device validation
 
-    def test_firefox(self):
+    def DISABLED_test_firefox(self):
         self.driver = webdriver.Firefox()
         self.driver.implicitly_wait(3)
         self._test_integration()
@@ -172,7 +172,7 @@ class TestIntegration(unittest.TestCase):
         self.driver.implicitly_wait(3)
         self._test_integration()
 
-    def DISABLED_test_docker_headless(self):
+    def test_docker_headless(self):
         import docker
         client = docker.from_env()
         selenium_cont = client.containers.run('selenium/standalone-chrome',
@@ -180,6 +180,7 @@ class TestIntegration(unittest.TestCase):
                                               network_mode='host',
                                               name="selenium-chrome",
                                               detach=True)
+        time.sleep(10)
         try:
             self.driver = webdriver.Remote('http://localhost:4444/wd/hub', DesiredCapabilities.CHROME)
             self.driver.set_window_size(1280, 1024)
