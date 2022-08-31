@@ -10,8 +10,6 @@ if (UNIX)
             NAME integration
             COMMAND
                 ${PYTEST}
-            DEPENDS
-                pc_manager
     )
 
     add_custom_target(
