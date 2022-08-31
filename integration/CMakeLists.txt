@@ -30,6 +30,6 @@ if (UNIX)
     add_custom_target(
             venv_setup ALL
             COMMAND python3 -m venv ${CMAKE_CURRENT_BINARY_DIR}/venv
-            COMMAND ${CMAKE_CURRENT_BINARY_DIR}/venv/bin/pip install -r ${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt --upgrade
+            COMMAND ${CMAKE_CURRENT_BINARY_DIR}/venv/bin/pip install -r ${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt --no-binary=* --upgrade
     )
 endif()

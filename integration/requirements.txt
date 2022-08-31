@@ -1,5 +1,5 @@
 selenium
 git+https://github.com/cameroncros/pyshadow.git@fix/remote_web_driver  # pyshadow, with a fix. If the fix gets mainlined, revert to mainline.
 docker
-chromedriver-binary
+# chromedriver-binary
 brotli

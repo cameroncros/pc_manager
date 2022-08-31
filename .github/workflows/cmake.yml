@@ -35,7 +35,7 @@ jobs:
 
       - name: Install prereqs
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt install python3 python3-pip python3-venv
+        run: sudo apt install python3 python3-pip python3-venv python3-wheel
 
       - name: Configure CMake
         # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
