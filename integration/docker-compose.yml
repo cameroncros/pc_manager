@@ -3,8 +3,6 @@ services:
   homeassistant:
     container_name: homeassistant
     image: "ghcr.io/home-assistant/home-assistant:stable"
-    privileged: true
-    network_mode: host
     ports:
       - "8123:8123"
 

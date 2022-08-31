@@ -18,8 +18,7 @@ if (UNIX)
             integration_setup ALL
             COMMAND
             cp ../src/pc_manager ./ &&
-            docker build . -t pc_manager_machine &&
-            docker-compose up -d
+            docker build . -t pc_manager_machine
             DEPENDS pc_manager
     )
 
