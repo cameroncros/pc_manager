@@ -33,7 +33,7 @@ int get_server_addr(char addr[2048])
         return SUCCESS;
     }
 #elif _WIN32
-    DWORD ret = GetEnvironmentVariable("MQTT_ADDR", &addr, 2048);
+    DWORD ret = GetEnvironmentVariable("MQTT_ADDR", addr, 2048);
     if (ret > 0)
     {
         return SUCCESS;
