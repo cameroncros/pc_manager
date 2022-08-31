@@ -3,11 +3,23 @@ if (UNIX)
     file(COPY Dockerfile DESTINATION .)
     file(COPY test_integration.py DESTINATION .)
 
-    add_custom_target(
-            integration_setup
+    # Build command line to run py.test.
+    set(PYTEST ${CMAKE_CURRENT_BINARY_DIR}/venv/bin/python3 -m pytest)
+
+    add_test(
+            NAME integration
             COMMAND
-                cp ../src/pc_manager ./ &&
-                docker build . -t pc_manager_machine
+                ${PYTEST}
+            DEPENDS
+                pc_manager
+    )
+
+    add_custom_target(
+            integration_setup ALL
+            COMMAND
+            cp ../src/pc_manager ./ &&
+            docker build . -t pc_manager_machine &&
+            docker-compose up -d
             DEPENDS pc_manager
     )
 
@@ -16,35 +28,9 @@ if (UNIX)
     find_package(PythonInterp 3 REQUIRED)
 
     # Generate the virtualenv and ensure it's up to date.
-    add_custom_command(
-            OUTPUT venv
-            COMMAND python3 -m venv venv
-    )
-    add_custom_command(
-            OUTPUT venv.stamp
-            DEPENDS venv requirements.txt
-            COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt requirements.txt
-            COMMAND ./venv/bin/pip install -r requirements.txt --upgrade
-    )
-
-    # Build command line to run py.test.
-    set(PYTEST
-            ${CMAKE_CURRENT_BINARY_DIR}/venv/bin/python3 -m pytest
-    )
-
-    add_custom_target(test_env_setup ALL
-            DEPENDS venv.stamp
-            SOURCES requirements.txt
-    )
-
-    add_test(
-            NAME integration
-            COMMAND
-                ${PYTEST}
-    )
-
-    add_dependencies(
-            pc_manager_test
-            test_env_setup
+    add_custom_target(
+            venv_setup ALL
+            COMMAND python3 -m venv ${CMAKE_CURRENT_BINARY_DIR}/venv
+            COMMAND ${CMAKE_CURRENT_BINARY_DIR}/venv/bin/pip install -r ${CMAKE_CURRENT_SOURCE_DIR}/requirements.txt --upgrade
     )
 endif()
