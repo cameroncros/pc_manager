@@ -131,6 +131,8 @@ class TestIntegration(unittest.TestCase):
 
         shadow = Shadow(self.driver)
         devices = shadow.find_elements('div.mdc-data-table__row')
+        if len(devices) == 1 and devices[0].text == 'No data':
+            return 0
         return len(devices)
 
     def _test_integration(self):
