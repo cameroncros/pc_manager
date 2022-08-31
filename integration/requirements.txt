@@ -3,3 +3,4 @@ git+https://github.com/cameroncros/pyshadow.git@fix/remote_web_driver  # pyshado
 docker
 # chromedriver-binary
 brotli
+pytest
