@@ -1,3 +1,6 @@
+#include <string.h>
+
+#include "utils.h"
 #include "json.h"
 #include "version.h"
 
@@ -18,5 +21,26 @@ struct json_object *get_device(const char *hostname, const char *location) {
         json_object_object_add(dev_object, "identifiers", ident_array);
     }
     return dev_object;
+}
+
+int get_server_addr(char addr[2048])
+{
+#if __linux
+    char* envaddr = getenv("MQTT_ADDR");
+    if (envaddr)
+    {
+        strncpy(addr, envaddr, 2048);
+        return SUCCESS;
+    }
+#elif _WIN32
+    DWORD ret = GetEnvironmentVariable("MQTT_ADDR", addr, 2048);
+    if (ret > 0)
+    {
+        return SUCCESS;
+    }
+#endif
+
+    strncpy(addr, "192.168.1.100", 2048);
+    return SUCCESS;
 }
 

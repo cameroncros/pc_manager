@@ -4,6 +4,7 @@
 #  include <unistd.h>
 #endif
 #include <signal.h>
+#include <conf.h>
 
 #include "conn.h"
 #include "utils.h"
@@ -25,8 +26,9 @@ int loop(void) {
     MQTTClient client = {0};
     while (keep_running)
     {
-
-        ASSERT_SUCCESS(conn_init(&client, "192.168.1.100"), "Failed conn_init");
+        char addr[2048] = { 0 };
+        ASSERT_SUCCESS(get_server_addr(addr), "Failed to guess server address");
+        ASSERT_SUCCESS(conn_init(&client, addr), "Failed conn_init");
 
         // Tasks
         REGISTER_ALL_TASKS;
@@ -34,7 +36,7 @@ int loop(void) {
         // Sensors
         REGISTER_ALL_SENSORS;
 
-        while (is_connected) {
+        while (keep_running && is_connected) {
             sleep(1);
             process_sensors(client);
         }

@@ -1,0 +1,68 @@
+version: "2"
+services:
+  homeassistant:
+    container_name: homeassistant
+    image: "ghcr.io/home-assistant/home-assistant:stable"
+    ports:
+      - "8123:8123"
+
+  mqtt:
+    container_name: homeassistant-mqtt
+    image: eclipse-mosquitto:latest
+    command: mosquitto -c /mosquitto-no-auth.conf
+    networks:
+      default:
+        ipv4_address: 192.168.40.100
+
+  machine_1:
+    container_name: test_machine_1
+    image: pc_manager_machine
+    environment:
+      - MQTT_ADDR=192.168.40.100
+    networks:
+      default:
+        ipv4_address: 192.168.40.10
+    restart: always
+
+  machine_2:
+    container_name: test_machine_2
+    image: pc_manager_machine
+    environment:
+      - MQTT_ADDR=192.168.40.100
+    networks:
+      default:
+        ipv4_address: 192.168.40.11
+    restart: always
+  machine_3:
+    container_name: test_machine_3
+    image: pc_manager_machine
+    environment:
+      - MQTT_ADDR=192.168.40.100
+    networks:
+      default:
+        ipv4_address: 192.168.40.12
+    restart: always
+  machine_4:
+    container_name: test_machine_4
+    image: pc_manager_machine
+    environment:
+      - MQTT_ADDR=192.168.40.100
+    networks:
+      default:
+        ipv4_address: 192.168.40.13
+    restart: always
+  machine_5:
+    container_name: test_machine_5
+    image: pc_manager_machine
+    environment:
+      - MQTT_ADDR=192.168.40.100
+    networks:
+      default:
+        ipv4_address: 192.168.40.14
+    restart: always
+
+networks:
+  default:
+    ipam:
+      config:
+        - subnet: 192.168.40.0/24
