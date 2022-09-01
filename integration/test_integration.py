@@ -20,12 +20,13 @@ class TestIntegration(unittest.TestCase):
         system('docker-compose up -d')
 
     def _page_wait_loaded(self):
-        while True:
+        for i in range(30):
             time.sleep(1)
             page_state = self.driver.execute_script('return document.readyState;')
             if page_state == 'complete':
                 return
-
+        else:
+            self.fail("Failed to load page")
 
     def _first_time_setup(self):
         print("Attempting to onboard", file=sys.stderr)
@@ -136,9 +137,7 @@ class TestIntegration(unittest.TestCase):
         return len(devices)
 
     def _test_integration(self):
-
-        authed = False
-        while not authed:
+        for i in range(5):
             self.driver.get("http://127.0.0.1:8123/")
             self._page_wait_loaded()
             if "/onboarding.html" in self.driver.current_url:
@@ -147,7 +146,9 @@ class TestIntegration(unittest.TestCase):
             if "/auth/authorize" in self.driver.current_url:
                 self._login()
                 continue
-            authed = True
+            break
+        else:
+            self.fail("Failed to authenticate")
 
         # Get number of devices before mqtt enabled
         num_devices = self._list_devices()
@@ -155,8 +156,12 @@ class TestIntegration(unittest.TestCase):
         # Enable mqtt
         num_default_integrations = self._check_num_integrations()
         self._enable_mqtt()
-        while self._check_num_integrations() != num_default_integrations + 1:
+        for i in range(5):
+            if self._check_num_integrations() == num_default_integrations + 1:
+                break
             self._enable_mqtt()
+        else:
+            self.fail("Failed to enable MQTT integration")
 
         # Check that the new devices have been discovered.
         self.assertEqual(self._list_devices(), num_devices + 5)
@@ -169,7 +174,6 @@ class TestIntegration(unittest.TestCase):
         self._test_integration()
 
     def DISABLED_test_chrome(self):
-        import chromedriver_binary  # Adds chromedriver binary to path
         self.driver = webdriver.Chrome()
         self.driver.implicitly_wait(3)
         self._test_integration()
@@ -182,7 +186,7 @@ class TestIntegration(unittest.TestCase):
                                               network_mode='host',
                                               name="selenium-chrome",
                                               detach=True)
-        time.sleep(10)
+        time.sleep(30)
         try:
             self.driver = webdriver.Remote('http://localhost:4444/wd/hub', DesiredCapabilities.CHROME)
             self.driver.set_window_size(1280, 1024)
