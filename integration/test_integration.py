@@ -3,6 +3,7 @@ import time
 import unittest
 from os import system
 
+import requests as requests
 from pyshadow.main import Shadow
 from selenium import webdriver
 from selenium.webdriver import ActionChains, Keys, DesiredCapabilities
@@ -14,7 +15,16 @@ class TestIntegration(unittest.TestCase):
     def setUp(self) -> None:
         self.assertEqual(0, system('docker-compose down'))
         self.assertEqual(0, system('docker-compose up -d'))
-        time.sleep(10)
+        for i in range(30):
+            try:
+                response = requests.get('http://127.0.0.1:8123/')
+                if response.status_code == 200:
+                    break
+            except BaseException:
+                pass
+            time.sleep(1)
+        else:
+            self.fail("Homeassistant not ready")
 
     def tearDown(self) -> None:
         system('docker-compose up -d')
@@ -181,12 +191,26 @@ class TestIntegration(unittest.TestCase):
     def test_docker_headless(self):
         import docker
         client = docker.from_env()
+        containers = client.containers.list()
+        for container in containers:
+            if container.name == "selenium-chrome":
+                container.remove(force=True)
         selenium_cont = client.containers.run('selenium/standalone-chrome',
                                               shm_size='2g',
                                               network_mode='host',
                                               name="selenium-chrome",
                                               detach=True)
-        time.sleep(30)
+        for i in range(30):
+            try:
+                response = requests.get('http://localhost:4444/ui')
+                if response.status_code == 200:
+                    break
+            except BaseException:
+                pass
+            time.sleep(1)
+        else:
+            self.fail("Selenium driver not ready")
+
         try:
             self.driver = webdriver.Remote('http://localhost:4444/wd/hub', DesiredCapabilities.CHROME)
             self.driver.set_window_size(1280, 1024)
