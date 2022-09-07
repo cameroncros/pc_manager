@@ -91,10 +91,15 @@ int get_availability_topic(const char *location, const char *hostname, char buff
 
 int conn_init(MQTTClient *client, const char *address) {
     int ret = SUCCESS;
+#ifdef WIN32
+    WSADATA wsaData;
+    ASSERT_TRUE_CLEANUP(WSAStartup(MAKEWORD(2,2), &wsaData) == 0, "Failed to initialise winsock");
+#endif
+
 #define ID_PREFIX "pc_manager_"
     char id[HOST_NAME_MAX + sizeof(ID_PREFIX) + 1] = {0};
     char hostname[HOST_NAME_MAX + 1] = {0};
-    gethostname(hostname, sizeof(hostname));
+    ASSERT_TRUE_CLEANUP(gethostname(hostname, sizeof(hostname)) == 0, "Failed to get hostname");
 
     int len = snprintf(id, HOST_NAME_MAX + sizeof(ID_PREFIX), ID_PREFIX "%s", hostname);
     ASSERT_TRUE_CLEANUP(len == (sizeof(ID_PREFIX)-1 + strlen(hostname)), "Failed to format ID");
