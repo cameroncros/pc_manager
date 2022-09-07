@@ -224,9 +224,15 @@ int __cdecl main(int argc, TCHAR *argv[]) {
 
     // This call returns when the service has stopped.
     // The process should simply terminate when the call returns.
-
-    if (!StartServiceCtrlDispatcher(DispatchTable)) {
+    DWORD ret = StartServiceCtrlDispatcher(DispatchTable);
+    if (!ret) {
+        if (GetLastError() == ERROR_FAILED_SERVICE_CONTROLLER_CONNECT)
+        {
+            loop();
+            return 0;
+        }
         SvcReportEvent(TEXT("StartServiceCtrlDispatcher"));
+
     }
     return 0;
 }
