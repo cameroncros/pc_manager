@@ -55,8 +55,14 @@ int msgarrvd(void *context, char *topicName, int topicLen, MQTTClient_message *m
     printf("     topic: %s\n", topicName);
     printf("   message: %.*s\n", message->payloadlen, (char *) message->payload);
 
+    int topicNameLen = topicLen;
+    if (topicNameLen == 0)
+    {
+        topicNameLen = strlen(topicName);
+    }
+
     for (PTASK task = taskList; task != NULL; task = task->next) {
-        if (strncmp(topicName, task->topic, topicLen) == 0) {
+        if (strncmp(topicName, task->topic, topicNameLen) == 0) {
             int ret = task->fn();
             if (ret != 0) {
                 printf("Failed to execute :(\n");

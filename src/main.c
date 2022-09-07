@@ -4,7 +4,7 @@
 
 #ifdef _WIN32
 
-#include <windows.h>
+#include <Windows.h>
 
 SERVICE_STATUS gSvcStatus;
 SERVICE_STATUS_HANDLE gSvcStatusHandle;
