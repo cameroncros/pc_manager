@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(pc_manager VERSION 1.16.0)
+project(pc_manager VERSION 1.17.0)
 
 execute_process(
         COMMAND git log -1 --format=%h
