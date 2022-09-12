@@ -5,7 +5,10 @@
 extern "C" {
 #endif
 
-#ifdef _WIN32
+#ifdef __linux
+#  include <unistd.h>
+#  include <bits/local_lim.h>
+#elif WIN32
 #  define HOST_NAME_MAX 1000
 #endif
 
