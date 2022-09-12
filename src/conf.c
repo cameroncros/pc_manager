@@ -3,6 +3,7 @@
 #include "utils.h"
 #include "json.h"
 #include "version.h"
+#include "conf.h"
 
 struct json_object *get_device(const char *hostname, const char *location) {
     struct json_object *dev_object = json_object_new_object();
@@ -44,3 +45,19 @@ int get_server_addr(char addr[2048])
     return SUCCESS;
 }
 
+int getdevicename(char devicename[HOST_NAME_MAX + 1])
+{
+    int ret = SUCCESS;
+    ASSERT_TRUE_CLEANUP(devicename, "devicename was NULL");
+#ifdef WIN32
+    WSADATA wsaData;
+    ASSERT_TRUE_CLEANUP(WSAStartup(MAKEWORD(2,2), &wsaData) == 0, "Failed to initialise winsock");
+#endif
+    ASSERT_TRUE_CLEANUP(gethostname(devicename, HOST_NAME_MAX) == 0, "Failed to get device name");
+    ASSERT_TRUE_CLEANUP(strncmp("", devicename, HOST_NAME_MAX) != 0, "Empty device name");
+cleanup:
+#ifdef WIN32
+    ret = WSACleanup();
+#endif
+    return ret;
+}

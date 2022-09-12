@@ -22,7 +22,7 @@ add_executable(
         ../src/utils.c
         ../src/loop.c
         ../src/conn.c
-        ../src/config.c
+        ../src/conf.c
         ../src/tasks/shutdown.c
         ../src/tasks/reboot.c
         ../src/tasks/update.c

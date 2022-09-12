@@ -5,9 +5,15 @@
 extern "C" {
 #endif
 
+#ifdef _WIN32
+#  define HOST_NAME_MAX 1000
+#endif
+
 struct json_object *get_device(const char *hostname, const char *location);
 
 int get_server_addr(char addr[2048]);
+
+int getdevicename(char devicename[HOST_NAME_MAX + 1]);
 
 #ifdef __cplusplus
 }

@@ -33,3 +33,15 @@ TEST_F(ConfigTest, get_server_addr_environment)
     SetEnvironmentVariable("MQTT_ADDR", NULL);
 #endif
 }
+
+TEST_F(ConfigTest, getdevicename_NULL)
+{
+    EXPECT_NE(SUCCESS, getdevicename(nullptr));
+}
+
+TEST_F(ConfigTest, getdevicename_success)
+{
+    char devicename[HOST_NAME_MAX] = {};
+    EXPECT_EQ(SUCCESS, getdevicename(devicename));
+    EXPECT_STRNE("", devicename);
+}

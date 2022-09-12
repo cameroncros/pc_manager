@@ -5,7 +5,7 @@ add_executable(pc_manager
         utils.c
         loop.c
         conn.c
-        config.c
+        conf.c
         tasks/shutdown.c
         tasks/reboot.c
         tasks/update.c
