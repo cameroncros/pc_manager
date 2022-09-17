@@ -2,9 +2,8 @@
 #include <limits.h>
 
 #ifdef __linux
-
 #  include <unistd.h>
-
+#  include <string.h>
 #elif WIN32
 #  include <winsock.h>
 #  define strdup _strdup
@@ -94,6 +93,23 @@ int get_availability_topic(const char *location, const char *hostname, char buff
     return SUCCESS;
 }
 
+int conn_register_available(MQTTClient client)
+{
+    int ret = SUCCESS;
+    char hostname[HOST_NAME_MAX + 1] = {0};
+    ASSERT_SUCCESS_CLEANUP(getdevicename(hostname), "Failed to get device name");
+
+    char availability_topic[MAX_MQTT_TOPIC] = {0};
+    ASSERT_SUCCESS_CLEANUP(get_availability_topic(LOCATION, hostname, availability_topic),
+                           "Failed to get availability topic");
+
+    // Mustn't send the availability topic with '\0'
+    ASSERT_SUCCESS_CLEANUP(conn_publish(client, availability_topic, ONLINE, sizeof(ONLINE) - 1, QOS1, false),
+                           "Failed to set availablility");
+cleanup:
+    return ret;
+}
+
 int conn_init(MQTTClient *client, const char *address) {
     int ret = SUCCESS;
 #define ID_PREFIX "pc_manager_"
@@ -121,18 +137,15 @@ int conn_init(MQTTClient *client, const char *address) {
     will_opts.qos = QOS2;
     will_opts.retained = false;
 
-
     conn_opts.keepAliveInterval = 20;
     conn_opts.cleansession = 1;
     conn_opts.will = &will_opts;
     ASSERT_SUCCESS_CLEANUP(MQTTClient_connect(*client, &conn_opts),
                            "Failed to connect");
 
-    // Mustn't send the availability topic with '\0'
-    ASSERT_SUCCESS_CLEANUP(conn_publish(*client, availability_topic, ONLINE, sizeof(ONLINE) - 1, QOS0, false),
-                           "Failed to set availablility");
+    ASSERT_SUCCESS_CLEANUP(conn_register_available(*client), "Failed to register availability");
     is_connected = true;
-    cleanup:
+cleanup:
     return ret;
 }
 
@@ -163,7 +176,7 @@ int conn_publish(MQTTClient client, const char *topic, const void *value, size_t
 
 int conn_register_task(MQTTClient client, const char *task_name, int (*fn)(void)) {
     char hostname[HOST_NAME_MAX + 1] = {0};
-    gethostname(hostname, sizeof(hostname));
+    ASSERT_SUCCESS(getdevicename(hostname), "Failed to get devicename");
     char command_topic[MAX_MQTT_TOPIC] = {0};
     char availability_topic[MAX_MQTT_TOPIC] = {0};
     char unique_id[MAX_MQTT_TOPIC] = {0};
@@ -175,6 +188,7 @@ int conn_register_task(MQTTClient client, const char *task_name, int (*fn)(void)
 
     struct json_object *object = json_object_new_object();
     json_object_object_add(object, "name", json_object_new_string(task_name));
+    json_object_object_add(object, "object_id", json_object_new_string(unique_id));
     json_object_object_add(object, "command_topic", json_object_new_string(command_topic));
     json_object_object_add(object, "availability_topic", json_object_new_string(availability_topic));\
     json_object_object_add(object, "unique_id", json_object_new_string(unique_id));
@@ -195,7 +209,7 @@ int conn_register_task(MQTTClient client, const char *task_name, int (*fn)(void)
 int conn_register_sensor(MQTTClient client, const char *sensor_name, const char *unit, const char *class,
                          char *(*fn)(time_t)) {
     char hostname[HOST_NAME_MAX + 1] = {0};
-    gethostname(hostname, sizeof(hostname));
+    ASSERT_SUCCESS(getdevicename(hostname), "Failed to get devicename");
     char state_topic[MAX_MQTT_TOPIC] = {0};
     char availability_topic[MAX_MQTT_TOPIC] = {0};
     char unique_id[MAX_MQTT_TOPIC] = {0};
@@ -206,6 +220,7 @@ int conn_register_sensor(MQTTClient client, const char *sensor_name, const char 
 
     struct json_object *object = json_object_new_object();
     json_object_object_add(object, "name", json_object_new_string(sensor_name));
+    json_object_object_add(object, "object_id", json_object_new_string(unique_id));
     json_object_object_add(object, "state_topic", json_object_new_string(state_topic));
     json_object_object_add(object, "availability_topic", json_object_new_string(availability_topic));
     json_object_object_add(object, "unique_id", json_object_new_string(unique_id));
@@ -235,7 +250,7 @@ int conn_register_sensor(MQTTClient client, const char *sensor_name, const char 
 
 int conn_deregister_task(MQTTClient client, const char *taskname) {
     char hostname[HOST_NAME_MAX + 1] = {0};
-    gethostname(hostname, sizeof(hostname));
+    ASSERT_SUCCESS(getdevicename(hostname), "Failed to get devicename");
     char command_topic[MAX_MQTT_TOPIC] = {0};
     char disco_string[MAX_MQTT_TOPIC] = {0};
     snprintf(command_topic, MAX_MQTT_TOPIC, COMMAND_TOPIC_FORMAT, LOCATION, hostname, taskname);

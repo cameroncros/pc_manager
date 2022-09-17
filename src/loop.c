@@ -36,6 +36,9 @@ int loop(void) {
         // Sensors
         REGISTER_ALL_SENSORS;
 
+        sleep(2);
+        ASSERT_SUCCESS(conn_register_available(client), "Failed register availability");
+
         while (keep_running && is_connected) {
             sleep(1);
             process_sensors(client);

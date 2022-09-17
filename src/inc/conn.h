@@ -25,6 +25,8 @@ typedef enum {
 
 int conn_init(MQTTClient *client, const char *address);
 
+int conn_register_available(MQTTClient client);
+
 int conn_register_task(MQTTClient client, const char *task_name, int (*fn)(void));
 
 int conn_register_sensor(MQTTClient client, const char *sensor_name, const char *unit, const char *class,
