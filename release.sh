@@ -15,13 +15,13 @@ fi
 git stash
 
 ${PYTHON} -m pip install bump2version
+git fetch
 git checkout dev
 git pull
 git checkout main
 git pull
 git merge dev
 bump2version minor
-git push origin main --tags
-git checkout dev
-git merge main
-git push origin dev
+if [ -n "${SKIP_PUSH}" ]; then
+  git push origin main --tags
+fi

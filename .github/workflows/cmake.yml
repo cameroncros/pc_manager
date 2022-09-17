@@ -79,7 +79,7 @@ jobs:
   release-dev:
     runs-on: ubuntu-latest
     needs: build
-    if: startsWith(github.ref, 'refs/tags/v') != true
+    if: startsWith(github.ref, 'refs/tags/v') != true && github.ref != 'refs/heads/dev'
     steps:
       - name: Get the branch
         id: get_branch
@@ -106,6 +106,20 @@ jobs:
           name: "Development Build - ${{ steps.get_branch.outputs.BRANCH }}"
           files: |
             ./*
+
+  release-to-master:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/dev'
+    steps:
+      - name: Remove keys
+        run: |
+          rm /home/runner/.ssh -rfv
+          git clone https://${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/cameroncros/pc_manager.git .
+          git config --local user.email "actions@github.com"
+          git config --local user.name "Github Actions"
+          ./release.sh
+          git push --follow-tags
 
   release-actual:
     needs: build
