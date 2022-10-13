@@ -1,9 +1,15 @@
 [package]
 name = "pc_manager"
-version = "0.1.0"
+version = "1.17.0"
 edition = "2021"
+description = "Monitor PC"
+license-file = "LICENSE.txt"
+readme = "README.md"
+authors = ["Cameron Cross"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[package.metadata.deb.systemd-units]
+unit-scripts = "install"
+unit-name = "pc_manager"
 
 [dependencies]
 libc = "0.2.135"
@@ -16,3 +22,4 @@ nix = "0.25.0"
 reqwest = { version = "0.11", features = ["blocking", "json"] }
 chrono = "0.4.22"
 regex = "1.6.0"
+cargo-deb = "1.39.3"
