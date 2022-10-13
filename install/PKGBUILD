@@ -1,0 +1,21 @@
+pkgname="pc_manager"
+pkgver="1.17.0"
+pkgrel="1"
+pkgdesc="PC Manager - Connect a PC to Homeassistant via MQTT"
+arch=("x86_64" "x86" "arm" "arm64")
+licence=("GPL3")
+source=("git+https://github.com/cameroncros/pc_manager.git#tag=v1.17.0")
+sha512sums=('SKIP')
+
+build() {
+    cargo build
+}
+
+check() {
+    cargo test
+}
+
+package() {
+    cp target/release/pc_manager $pkgdir/usr/bin
+    cp install/pc_manager.service $pkgdir/usr/lib/systemd/system/
+}
