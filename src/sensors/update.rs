@@ -29,7 +29,6 @@ pub fn check_for_update() -> Result<String, ()> {
     return Err(());
 }
 
-#[no_mangle]
 pub fn sensor_update(now: &Instant) -> Result<String, ()> {
     let mut last = LAST_UPDATED_CHECK.lock().unwrap();
     let duration_since = now.duration_since(*last);
@@ -53,8 +52,9 @@ mod tests {
     }
 
     #[test]
+    #[ignore]  // Will fail when up to date.
     fn test_sensor_update() {
-        let future = Instant::now() + Duration::from_secs(5000);
+        let future = Instant::now() + Duration::from_secs(10000);
         assert_eq!(Ok(String::from("")), sensor_update(&future));
     }
 
