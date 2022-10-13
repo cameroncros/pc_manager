@@ -17,16 +17,12 @@ pub fn sensor_version(_now: &Instant) -> Result<String, ()> {
 
 #[cfg(test)]
 mod tests {
-    use std::time::{Duration, Instant};
+    use std::time::Instant;
     use crate::sensors::version::sensor_version;
 
     #[test]
-    fn test_check_for_update_too_soon() {
-        assert_eq!(Err(()), sensor_version(Instant::now()));
-    }
-
-    #[test]
-    fn test_check_for_update() {
-        assert_eq!(Ok(String::from(env!("CARGO_PKG_VERSION"))), sensor_version(Instant::now()+Duration::from_secs(5001)));
+    fn test_sensor_version() {
+        assert_eq!(Ok(String::from(env!("CARGO_PKG_VERSION"))),
+                   sensor_version(&Instant::now()));
     }
 }

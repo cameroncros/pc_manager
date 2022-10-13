@@ -49,12 +49,13 @@ mod tests {
 
     #[test]
     fn test_sensor_update_too_soon() {
-        assert_eq!(Err(()), sensor_update(Instant::now()));
+        assert_eq!(Err(()), sensor_update(&Instant::now()));
     }
 
     #[test]
     fn test_sensor_update() {
-        assert_eq!(Ok(String::from("")), sensor_update(Instant::now() + Duration::from_secs(5000)));
+        let future = Instant::now() + Duration::from_secs(5000);
+        assert_eq!(Ok(String::from("")), sensor_update(&future));
     }
 
     #[test]

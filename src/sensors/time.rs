@@ -16,6 +16,6 @@ mod tests {
 
     #[test]
     fn test_check_for_update() {
-        assert_eq!(Ok(String::from("")), sensor_time(Instant::now()));
+        assert_eq!(Ok(String::from("")), sensor_time(&Instant::now()));
     }
 }
