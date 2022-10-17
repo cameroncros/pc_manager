@@ -53,7 +53,6 @@ impl Connection {
         let mut create_opts = MqttOptions::new(id, address, 1883);
         let availability = get_availability_topic(&LOCATION, &hostname).unwrap();
         create_opts.set_last_will(LastWill::new(availability, OFFLINE, QoS::AtLeastOnce, false));
-
         let (client, eventloop) = rumqttc::AsyncClient::new(create_opts, 100);
 
         return Self {
@@ -64,9 +63,23 @@ impl Connection {
             connected: true,
         };
     }
-    pub(crate) fn is_connected(&self) -> bool {
-        return self.connected;
+
+    pub async fn run(&mut self) {
+        // Iterate to poll the eventloop for connection progress
+
+        loop {
+            let i = self._eventloop.poll().await;
+            if i.is_err() {
+                println!("Failed with: {:?}", i.unwrap_err());
+                break;
+            } else {
+                println!("Notification = {:?}", i.unwrap());
+            }
+
+            self.process_sensors().await.unwrap();
+        }
     }
+
 // pub fn recvmsg(
 //     _&self, message_opt: Option<Message>,
 // ) {

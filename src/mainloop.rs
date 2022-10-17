@@ -15,13 +15,7 @@ pub async fn mainloop() {
 
         sleep(Duration::from_secs(2));
         client.register_available().await.expect("Failed register availability");
-        loop {
-            sleep(Duration::from_secs(1));
-            client.process_sensors().await.unwrap();
-            if !client.is_connected() {
-                break;
-            }
-        }
+        client.run().await;
         client.cleanup().await.expect("Cleanup");
     }
 }
