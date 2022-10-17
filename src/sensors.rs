@@ -1,7 +1,7 @@
 use crate::conn::Connection;
 
 mod time;
-mod update;
+pub(crate) mod update;
 mod version;
 
 use crate::sensors::time::sensor_time;
