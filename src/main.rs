@@ -8,6 +8,7 @@ mod sensors;
 
 use crate::mainloop::mainloop;
 
-pub fn main() {
-    mainloop();
+#[tokio::main]
+async fn main() {
+    mainloop().await;
 }

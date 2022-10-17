@@ -1,27 +1,27 @@
 use std::thread::sleep;
 use std::time::Duration;
 use crate::conf::get_server_addr;
-use crate::conn::{conn_cleanup, conn_init, conn_register_available, process_sensors};
+use crate::conn::Connection;
 use crate::sensors::register_sensors;
 use crate::tasks::register_tasks;
 
-pub fn mainloop() {
+pub async fn mainloop() {
     loop {
         let addr: String = get_server_addr().expect("Failed to guess server address");
-        let client = conn_init(addr).expect("Failed conn_init");
+        let mut client = Connection::new(addr).await;
 
-        register_sensors(&client).unwrap();
-        register_tasks(&client).unwrap();
+        register_sensors(&client).await.unwrap();
+        register_tasks(&client).await.unwrap();
 
         sleep(Duration::from_secs(2));
-        conn_register_available(&client).expect("Failed register availability");
+        client.register_available().await.expect("Failed register availability");
         loop {
             sleep(Duration::from_secs(1));
-            process_sensors(&client).unwrap();
+            client.process_sensors().await.unwrap();
             if !client.is_connected() {
                 break;
             }
         }
-        conn_cleanup(client).expect("Cleanup");
+        client.cleanup().await.expect("Cleanup");
     }
 }

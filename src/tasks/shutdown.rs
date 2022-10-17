@@ -6,7 +6,7 @@ pub fn task_shutdown() {
 }
 
 #[cfg(target_os = "windows")]
-fn task_shutdown()
+pub(crate) fn task_shutdown()
 {}
 
 #[cfg(test)]

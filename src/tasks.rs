@@ -1,14 +1,13 @@
-use paho_mqtt::AsyncClient;
-use crate::conn::conn_register_task;
+use crate::conn::Connection;
 use crate::tasks::reboot::task_reboot;
 use crate::tasks::shutdown::task_shutdown;
 
 mod reboot;
 mod shutdown;
 
-pub fn register_tasks(client: &AsyncClient) -> Result<(), ()>
+pub async fn register_tasks(client: &Connection) -> Result<(), ()>
 {
-    conn_register_task(client, String::from("reboot"), task_reboot).unwrap();
-    conn_register_task(client, String::from("shutdown"), task_shutdown).unwrap();
+    client.register_task(String::from("reboot"), task_reboot).await.unwrap();
+    client.register_task(String::from("shutdown"), task_shutdown).await.unwrap();
     return Ok(());
 }
