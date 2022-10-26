@@ -9,7 +9,7 @@ pub(crate) mod update {
     use nix::unistd::{chdir, fork, ForkResult, setuid, User};
     use nix::unistd::seteuid;
 
-    use crate::sensors::update::check_for_update;
+    use crate::sensors::update::update::check_for_update;
 
     pub fn build_package(
         update_url: String,
