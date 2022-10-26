@@ -55,3 +55,10 @@ pub(crate) mod update {
         install_update_arch(update_url).unwrap();
     }
 }
+
+#[cfg(target_os = "windows")]
+pub(crate) mod update {
+    pub fn task_update() {
+        // TODO;
+    }
+}

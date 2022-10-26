@@ -5,7 +5,7 @@ pub(crate) mod update;
 mod version;
 
 use crate::sensors::time::sensor_time;
-use crate::sensors::update::sensor_update;
+use crate::sensors::update::update::sensor_update;
 use crate::sensors::version::sensor_version;
 
 pub async fn register_sensors(client: &Connection) -> Result<(), ()>

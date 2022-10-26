@@ -8,7 +8,7 @@ pub(crate) mod reboot {
 }
 
 #[cfg(target_os = "windows")]
-mod reboot {
+pub(crate) mod reboot {
     use winapi::shared::minwindef::{BOOL, PDWORD};
     use winapi::um::processthreadsapi::{GetCurrentProcess, OpenProcessToken};
     use winapi::shared::ntdef::{FALSE, HANDLE, LPCSTR, LUID, NULL, PHANDLE, PLUID};

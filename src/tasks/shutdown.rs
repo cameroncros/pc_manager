@@ -8,7 +8,7 @@ pub(crate) mod shutdown {
 }
 
 #[cfg(target_os = "windows")]
-mod shutdown {
+pub(crate) mod shutdown {
     use winapi::shared::minwindef::{BOOL, PDWORD};
     use winapi::um::processthreadsapi::{GetCurrentProcess, OpenProcessToken};
     use winapi::shared::ntdef::{FALSE, HANDLE, LPCSTR, LUID, NULL, PHANDLE, PLUID};
