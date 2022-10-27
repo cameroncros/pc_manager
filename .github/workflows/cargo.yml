@@ -41,7 +41,7 @@ jobs:
           override: true
 
       - name: Build
-        run: cargo build
+        run: cargo build --release
 
       - name: Test
         run: cargo test
