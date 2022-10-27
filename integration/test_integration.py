@@ -144,11 +144,14 @@ class TestIntegration(unittest.TestCase):
         devices = shadow.find_elements('div.mdc-data-table__row')
         if len(devices) == 1 and devices[0].text == 'No data':
             return 0
+        count = 0
         i = 1
         for device in devices:
-            print(f"Device [{i}]: [{device.screenshot_as_base64}]\n", file=sys.stderr)
+            print(f"Device [{i}]:\n\t[{device.screenshot_as_base64}]\n\t[{device.text}]\n", file=sys.stderr)
+            if "MQTT" in device.text:
+                count += 1
             i += 1
-        return len(devices)
+        return count
 
     def _test_integration(self):
         for i in range(5):
