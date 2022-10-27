@@ -100,7 +100,7 @@
                         <File Id='LicenseFile'
                             Name='LICENSE.txt'
                             DiskId='1'
-                            Source='C:\Users\Cameron\CLionProjects\pc_manager\LICENSE.txt'
+                            Source='$(var.CargoTargetBinDir)\..\..\LICENSE.txt'
                             KeyPath='yes'/>
                     </Component>
                     
