@@ -144,6 +144,10 @@ class TestIntegration(unittest.TestCase):
         devices = shadow.find_elements('div.mdc-data-table__row')
         if len(devices) == 1 and devices[0].text == 'No data':
             return 0
+        i = 1
+        for device in devices:
+            print(f"Device [{i}]: [{device.screenshot_as_base64}]\n", file=sys.stderr)
+            i += 1
         return len(devices)
 
     def _test_integration(self):
