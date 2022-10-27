@@ -32,7 +32,7 @@ jobs:
 
       - name: Install prereqs
         if: matrix.os == 'ubuntu-latest'
-        run: sudo apt install python3 python3-pip python3-venv python3-wheel
+        run: sudo apt install dash python3 python3-pip python3-venv python3-wheel
 
       - name: Install toolchain
         uses: actions-rs/toolchain@v1
