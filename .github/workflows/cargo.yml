@@ -59,7 +59,7 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           cargo install cargo-wix
-          cargo wix -I install/package.wxs
+          cargo wix -I install/package.wxs --nocapture
 
       - uses: actions/upload-artifact@master
         if: matrix.os == 'windows-latest'
