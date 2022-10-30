@@ -70,7 +70,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         with:
           name: pc_manager.deb
-          path: target/**/*.deb
+          path: target/debian/*.deb
       - uses: actions/upload-artifact@master
         if: matrix.os == 'ubuntu-latest'
         with:
