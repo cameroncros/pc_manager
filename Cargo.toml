@@ -21,12 +21,12 @@ log = "0.4.17"
 reqwest = { version = "0.11", default-features = false, features = ["blocking", "json", "rustls-tls"] }
 chrono = "0.4.22"
 regex = "1.6.0"
+tempdir = "0.3.7"
 
 [target.'cfg(unix)'.dependencies]
 cargo-deb = "1.39.3"
 nix = "0.25.0"
 libc = "0.2.135"
-tempdir = "0.3.7"
 
 [target.'cfg(windows)'.dependencies]
 cargo-wix = "0.3.3"

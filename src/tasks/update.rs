@@ -142,6 +142,14 @@ pub(crate) mod update {
 
 #[cfg(target_os = "windows")]
 pub(crate) mod update {
+    use std::env::{current_dir, set_current_dir};
+    use std::fs::File;
+    use std::io::Write;
+    use std::process::Command;
+    use reqwest::blocking::ClientBuilder;
+    use reqwest::redirect::Policy;
+    use serde_json::Value;
+
     pub fn download_package(
         update_url: String,
     ) -> Result<(), ()> {
@@ -157,13 +165,13 @@ pub(crate) mod update {
     pub fn install_update_win(
         update_url: String,
     ) -> Result<(), ()> {
+        let current_dir = current_dir().unwrap();
         let tmpdir = tempdir::TempDir::new("pc_manager").unwrap();
-        let permissions = Permissions::from_mode(0o777);
-        set_permissions(tmpdir.path(), permissions).unwrap();
-        chdir(tmpdir.path()).unwrap();
+        set_current_dir(tmpdir.path()).unwrap();
 
         download_package(update_url).unwrap();
         Command::new("pc_manager.msi").spawn().unwrap();
+        set_current_dir(current_dir).unwrap();
         return Ok(());
     }
 
@@ -195,7 +203,7 @@ pub(crate) mod update {
             for asset in assets {
                 let asset_name = asset.get("name").unwrap().as_str().unwrap();
                 if asset_name.ends_with(".msi") {
-                    let asset_url = asset.get("url").unwrap().as_str().unwrap();
+                    let asset_url = asset.get("browser_download_url").unwrap().as_str().unwrap();
                     return Ok(String::from(asset_url));
                 }
             }
@@ -219,8 +227,10 @@ pub(crate) mod update {
         fn test_get_update_url() {
             let result = get_update_url();
             assert_eq!(true, result.is_ok());
+            let result_url = result.unwrap();
+            println!("Update URL: {result_url}");
             let re = Regex::new(r"https://github\.com/cameroncros/pc_manager/releases/download/.*\.msi").unwrap();
-            assert_eq!(true, re.is_match(result.unwrap().as_str()));
+            assert_eq!(true, re.is_match(result_url.as_str()));
         }
     }
 }
