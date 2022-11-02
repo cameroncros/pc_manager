@@ -125,7 +125,7 @@ pub(crate) mod update {
         }
 
         #[test]
-        // #[ignore]
+        #[ignore]
         fn test_task_update() {
             task_update();
         }
