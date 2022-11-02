@@ -1,7 +1,6 @@
 #[cfg(target_os = "linux")]
 pub(crate) mod update {
-    use std::fs::{File, Permissions, set_permissions};
-    use std::io::Write;
+    use std::fs::{write, Permissions, set_permissions};
     use std::os::unix::fs::PermissionsExt;
     use std::process::{Command, exit};
 
@@ -25,10 +24,7 @@ pub(crate) mod update {
         println!("Downloading: {update_url}");
         let client = ClientBuilder::new().user_agent("pc_manager/1.0").redirect(Policy::limited(5)).build().unwrap();
         let resp = client.get(update_url).send().unwrap();
-        {
-            let mut file = File::create("PKGBUILD").unwrap();
-            file.write_all(resp.bytes().unwrap().as_ref()).unwrap();
-        }
+        write("PKGBUILD", resp.bytes().unwrap()).unwrap();
         let result = Command::new("makepkg").output();
         if result.is_ok() {
             return Ok(());
@@ -55,8 +51,8 @@ pub(crate) mod update {
             }
             Err(_) => println!("Fork failed"),
         }
-        Command::new("pacman -U --noconfirm *.tar*").spawn().unwrap();
-        Command::new("systemctl restart pc_manager").spawn().unwrap();
+        Command::new("pacman").args(["-U", "--noconfirm", "*.tar*"]).spawn().unwrap();
+        Command::new("systemctl").args(["restart",  "pc_manager"]).spawn().unwrap();
         return Ok(());
     }
 
@@ -143,8 +139,7 @@ pub(crate) mod update {
 #[cfg(target_os = "windows")]
 pub(crate) mod update {
     use std::env::{current_dir, set_current_dir};
-    use std::fs::File;
-    use std::io::Write;
+    use std::fs::write;
     use std::process::Command;
     use reqwest::blocking::ClientBuilder;
     use reqwest::redirect::Policy;
@@ -155,23 +150,22 @@ pub(crate) mod update {
     ) -> Result<(), ()> {
         let client = ClientBuilder::new().user_agent("pc_manager/1.0").redirect(Policy::limited(5)).build().unwrap();
         let resp = client.get(update_url).send().unwrap();
-        {
-            let mut file = File::create("pc_manager.msi").unwrap();
-            file.write_all(resp.bytes().unwrap().as_ref()).unwrap();
-        }
+        write("pc_manager.msi", resp.bytes().unwrap()).unwrap();
         return Ok(());
     }
 
     pub fn install_update_win(
         update_url: String,
     ) -> Result<(), ()> {
-        let current_dir = current_dir().unwrap();
+        let prevdir = current_dir().unwrap();
         let tmpdir = tempdir::TempDir::new("pc_manager").unwrap();
         set_current_dir(tmpdir.path()).unwrap();
 
         download_package(update_url).unwrap();
-        Command::new("pc_manager.msi").spawn().unwrap();
-        set_current_dir(current_dir).unwrap();
+        let command = format!("{}\\pc_manager.msi", tmpdir.path().display());
+        Command::new("msiexec").args(["/i", command.as_str(), "/passive"]).output().unwrap();
+
+        set_current_dir(prevdir).unwrap();
         return Ok(());
     }
 
@@ -214,13 +208,41 @@ pub(crate) mod update {
 
     #[cfg(test)]
     mod tests {
+        use std::env::{current_dir, set_current_dir};
+        use std::fs::{read_dir, remove_file};
         use regex::Regex;
-        use crate::tasks::update::update::{get_update_url, task_update};
+        use crate::tasks::update::update::{download_package, get_update_url, task_update};
 
         #[test]
         #[ignore]
         fn test_task_update() {
             task_update();
+        }
+
+        #[test]
+        #[ignore]
+        fn test_download_package() {
+            let prevdir = current_dir().unwrap();
+            let tmpdir = tempdir::TempDir::new("pc_manager").unwrap();
+            set_current_dir(tmpdir.path()).unwrap();
+
+            let update_url = get_update_url().unwrap();
+            let res = download_package(update_url);
+            assert_eq!(true, res.is_ok());
+
+            let mut found = false;
+            let paths = read_dir("./").unwrap();
+            for path in paths {
+                let path_str = path.unwrap().path().display().to_string();
+                println!("File: {path_str}");
+                if path_str.ends_with(".msi") {
+                    remove_file(path_str).unwrap();
+                    found = true;
+                }
+            }
+            assert_eq!(true, found);
+
+            set_current_dir(prevdir).unwrap();
         }
 
         #[test]
