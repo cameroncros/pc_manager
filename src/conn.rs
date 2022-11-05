@@ -1,5 +1,6 @@
 use std::collections::HashMap;
-use std::sync::Mutex;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
 use rumqttc::{AsyncClient, ClientError, EventLoop, LastWill, MqttOptions, QoS};
@@ -39,6 +40,7 @@ pub struct Connection {
     client: AsyncClient,
     _eventloop: EventLoop,
     connected: bool,
+    running: Arc<AtomicBool>,
 }
 
 impl Connection {}
@@ -46,6 +48,7 @@ impl Connection {}
 impl Connection {
     pub async fn new(
         address: String,
+        running: Arc<AtomicBool>,
     ) -> Self {
         let hostname = getdevicename().expect("Failed to get device name");
         let id = format!("pc_manager_{hostname}");
@@ -61,6 +64,7 @@ impl Connection {
             client,
             _eventloop: eventloop,
             connected: true,
+            running,
         };
     }
 
@@ -77,6 +81,10 @@ impl Connection {
             }
 
             self.process_sensors().await.unwrap();
+
+            if self.running.load(Ordering::SeqCst) == false {
+                break;
+            }
         }
     }
 

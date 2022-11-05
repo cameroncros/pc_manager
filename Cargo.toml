@@ -31,3 +31,4 @@ libc = "0.2.135"
 [target.'cfg(windows)'.dependencies]
 cargo-wix = "0.3.3"
 winapi = { version = "0.3.9", features = ["securitybaseapi", "winuser"] }
+windows-service = "0.5.0"
