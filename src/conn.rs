@@ -1,10 +1,11 @@
 use std::collections::HashMap;
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
-use std::time::Instant;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::{Duration, Instant};
 
 use rumqttc::{AsyncClient, ClientError, EventLoop, LastWill, MqttOptions, QoS};
 use serde_json::{json, Value};
+use tokio::time;
 
 use crate::conf::get_device;
 use crate::conf::getdevicename;
@@ -38,12 +39,10 @@ pub struct Connection {
     task_list: Mutex<Vec<TASK>>,
     sensor_list: Mutex<Vec<SENSOR>>,
     client: AsyncClient,
-    _eventloop: EventLoop,
+    eventloop_mtx: Mutex<EventLoop>,
     connected: bool,
     running: Arc<AtomicBool>,
 }
-
-impl Connection {}
 
 impl Connection {
     pub async fn new(
@@ -62,30 +61,62 @@ impl Connection {
             task_list: Mutex::new(vec![]),
             sensor_list: Mutex::new(vec![]),
             client,
-            _eventloop: eventloop,
+            eventloop_mtx: Mutex::new(eventloop),
             connected: true,
             running,
         };
     }
 
-    pub async fn run(&mut self) {
-        // Iterate to poll the eventloop for connection progress
-
+    async fn run_mqtt(&self)
+    {
         loop {
-            let i = self._eventloop.poll().await;
-            if i.is_err() {
-                println!("Failed with: {:?}", i.unwrap_err());
-                break;
-            } else {
-                println!("Notification = {:?}", i.unwrap());
+            {
+                let mut eventloop = self.eventloop_mtx.lock().unwrap();
+                let i = eventloop.poll().await;
+                if i.is_err() {
+                    println!("Failed with: {:?}", i.unwrap_err());
+                    break;
+                } else {
+                    println!("Notification = {:?}", i.unwrap());
+                }
             }
-
-            self.process_sensors().await.unwrap();
 
             if self.running.load(Ordering::SeqCst) == false {
                 break;
             }
         }
+    }
+
+    async fn run_sensors(&self)
+    {
+        loop {
+            time::sleep(Duration::from_millis(2000)).await;
+
+            if self.running.load(Ordering::SeqCst) == false {
+                break;
+            }
+
+            self.process_sensors().await.unwrap();
+        }
+    }
+
+    async fn wait_for_death(&self)
+    {
+        loop {
+            if self.running.load(Ordering::SeqCst) == false {
+                self.client.disconnect().await.unwrap();
+                break;
+            }
+            time::sleep(Duration::from_millis(0)).await;
+        }
+    }
+
+    pub async fn run(&mut self) {
+        tokio::join!(
+            self.run_mqtt(),
+            self.run_sensors(),
+            self.wait_for_death(),
+        );
     }
 
 // pub fn recvmsg(
