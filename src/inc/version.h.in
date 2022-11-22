@@ -1,7 +1,0 @@
-#ifndef PC_MANAGER_VERSION_H
-#define PC_MANAGER_VERSION_H
-
-#define VERSION "@pc_manager_VERSION@"
-#define GIT "@GIT_HASH_SHORT@"
-
-#endif //PC_MANAGER_VERSION_H

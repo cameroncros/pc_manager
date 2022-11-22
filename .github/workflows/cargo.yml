@@ -10,9 +10,6 @@ on:
   pull_request:
     branches:
       - '**'
-env:
-  # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
-  BUILD_TYPE: Release
 
 jobs:
   build:
@@ -37,44 +34,48 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt install python3 python3-pip python3-venv python3-wheel
 
-      - name: Configure CMake
-        # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-        # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-        run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      - name: Install toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
 
       - name: Build
-        if: matrix.os == 'ubuntu-latest'
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target all
-
-      - name: Build
-        if: matrix.os == 'windows-latest'
-        run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} --target ALL_BUILD
+        run: cargo build --release
 
       - name: Test
-        working-directory: ${{github.workspace}}/build
-        # Execute tests defined by the CMake configuration.
-        # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
-        run: ctest -C ${{env.BUILD_TYPE}} --rerun-failed --output-on-failure
+        run: cargo test
+
+      - name: Integration
+        run: integration/run.sh
 
       - name: Package
-        working-directory: ${{github.workspace}}/build
-        run: cpack
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cargo install cargo-deb
+          cargo deb
+
+      - name: Package
+        if: matrix.os == 'windows-latest'
+        run: |
+          cargo install cargo-wix
+          cargo wix -I install/package.wxs --nocapture
 
       - uses: actions/upload-artifact@master
         if: matrix.os == 'windows-latest'
         with:
           name: pc_manager.msi
-          path: build/*.msi
+          path: target/wix/*.msi
       - uses: actions/upload-artifact@master
         if: matrix.os == 'ubuntu-latest'
         with:
           name: pc_manager.deb
-          path: build/*.deb
+          path: target/debian/*.deb
       - uses: actions/upload-artifact@master
         if: matrix.os == 'ubuntu-latest'
         with:
           name: PKGBUILD
-          path: build/PKGBUILD
+          path: install/PKGBUILD
 
   release-dev:
     runs-on: ubuntu-latest
