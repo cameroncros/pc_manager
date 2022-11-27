@@ -8,14 +8,19 @@ source=("git+https://github.com/cameroncros/pc_manager.git#tag=v1.20.0")
 sha512sums=('SKIP')
 
 build() {
-    cargo build
+    cd pc_manager
+    cargo build --release
 }
 
 check() {
+    cd pc_manager
     cargo test
 }
 
 package() {
+    cd pc_manager
+    mkdir -p $pkgdir/usr/bin
+    mkdir -p $pkgdir/usr/lib/systemd/system
     cp target/release/pc_manager $pkgdir/usr/bin
     cp install/pc_manager.service $pkgdir/usr/lib/systemd/system/
 }

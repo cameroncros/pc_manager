@@ -2,9 +2,9 @@
 pub(crate) mod update {
     use std::fs::{write, Permissions, set_permissions};
     use std::os::unix::fs::PermissionsExt;
-    use std::process::{Command, exit};
+    use std::process::{Command, exit, Output};
 
-    use nix::sys::wait::waitpid;
+    use nix::sys::wait::{waitpid, WaitStatus};
     use nix::unistd::{chdir, fork, ForkResult, getuid, setuid, User};
     use nix::unistd::seteuid;
 
@@ -14,7 +14,7 @@ pub(crate) mod update {
 
     pub fn build_package(
         update_url: String,
-    ) -> Result<(), String> {
+    ) -> std::io::Result<Output> {
         let cur_uid = getuid();
         if cur_uid.is_root() {
             let user = User::from_name("nobody").unwrap().unwrap();
@@ -26,10 +26,11 @@ pub(crate) mod update {
         let resp = client.get(update_url).send().unwrap();
         write("PKGBUILD", resp.bytes().unwrap()).unwrap();
         let result = Command::new("makepkg").output();
-        if result.is_ok() {
-            return Ok(());
-        }
-        return Err(result.err().unwrap().to_string());
+        let output = result.as_ref().unwrap();
+        println!("status: {}", output.status);
+        println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+        println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+        return result;
     }
 
     pub fn install_update_arch(
@@ -42,17 +43,40 @@ pub(crate) mod update {
 
         match unsafe { fork() } {
             Ok(ForkResult::Parent { child, .. }) => {
-                println!("Continuing execution in parent process, new child has pid: {}", child);
-                waitpid(child, None).unwrap();
+                println!("Continuing execution in parent process, new child has pid: {child}");
+                match { waitpid(child, None).unwrap() } {
+                    WaitStatus::Exited(_, 0) => {
+                        println!("Build successful.");
+                    },
+                    WaitStatus::Exited(_, retcode) => {
+                        println!("Build failed with: [{retcode}]");
+                    },
+                    _ => {
+                        println!("Something went wrong!");
+                    }
+                }
             }
             Ok(ForkResult::Child) => {
-                build_package(update_url).unwrap();
-                exit(0);
+                let output = build_package(update_url).unwrap();
+                exit(output.status.code().unwrap());
             }
             Err(_) => println!("Fork failed"),
         }
-        Command::new("pacman").args(["-U", "--noconfirm", "*.tar*"]).spawn().unwrap();
-        Command::new("systemctl").args(["restart",  "pc_manager"]).spawn().unwrap();
+        {
+            let output = Command::new("pkexec").args(["pacman", "-U", "--noconfirm", "*.tar*"]).output().unwrap();
+            println!("status: {}", output.status);
+            println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+            println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+            assert!(output.status.success());
+        }
+        {
+            let output = Command::new("systemctl").args(["restart", "pc_manager"]).output().unwrap();
+            println!("status: {}", output.status);
+            println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+            println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+            assert!(output.status.success());
+        }
+
         return Ok(());
     }
 
@@ -95,13 +119,59 @@ pub(crate) mod update {
 
     #[cfg(test)]
     mod tests {
-        use std::fs::{read_dir, remove_file};
+        use std::env::current_dir;
+        use std::fs::{Permissions, read_dir, remove_dir_all, set_permissions, copy};
+        use std::os::unix::fs::PermissionsExt;
+        use std::process::Command;
+        use nix::unistd::chdir;
         use regex::Regex;
         use crate::tasks::update::update::{build_package, get_update_url, task_update};
 
         #[test]
         #[ignore]
+        fn test_pkgbuild() {
+            let tmpdir = tempdir::TempDir::new("pc_manager").unwrap();
+            println!("TMPDIR: [{}]", tmpdir.as_ref().display());
+            let permissions = Permissions::from_mode(0o777);
+            set_permissions(tmpdir.path(), permissions).unwrap();
+
+            let tmp_pkgbuild = format!("{}/PKGBUILD", tmpdir.path().display());
+            copy("install/PKGBUILD", tmp_pkgbuild).unwrap();
+
+            let original_dir = current_dir().unwrap();
+            chdir(tmpdir.path()).unwrap();
+
+            let output = Command::new("makepkg").args(["--nocheck"]).output().unwrap();
+            println!("status: {}", output.status);
+            println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+            println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+            assert!(output.status.success());
+
+            let mut found = false;
+            let paths = read_dir("./").unwrap();
+            for path in paths {
+                let path_str = path.unwrap().path().display().to_string();
+                println!("Name: {path_str}");
+                if path_str.contains(".pkg.") {
+                    found = true;
+                }
+            }
+            assert_eq!(true, found);
+
+            chdir(original_dir.as_path()).unwrap();
+            remove_dir_all(tmpdir.path()).unwrap();
+        }
+
+        #[test]
+        #[ignore]
         fn test_build_package() {
+            let tmpdir = tempdir::TempDir::new("pc_manager").unwrap();
+            println!("TMPDIR: [{}]", tmpdir.as_ref().display());
+            let permissions = Permissions::from_mode(0o777);
+            set_permissions(tmpdir.path(), permissions).unwrap();
+            let original_dir = current_dir().unwrap();
+            chdir(tmpdir.path()).unwrap();
+
             let update_url = get_update_url().unwrap();
             let res = build_package(update_url);
             assert_eq!(true, res.is_ok());
@@ -117,7 +187,8 @@ pub(crate) mod update {
             }
             assert_eq!(true, found);
 
-            remove_file("PKGBUILD").unwrap();
+            chdir(original_dir.as_path()).unwrap();
+            remove_dir_all(tmpdir.path()).unwrap();
         }
 
         #[test]
