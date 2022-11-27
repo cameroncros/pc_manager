@@ -1,10 +1,10 @@
 pkgname="pc_manager"
-pkgver="1.19.0"
+pkgver="1.20.0"
 pkgrel="1"
 pkgdesc="PC Manager - Connect a PC to Homeassistant via MQTT"
 arch=("x86_64" "x86" "arm" "arm64")
 licence=("GPL3")
-source=("git+https://github.com/cameroncros/pc_manager.git#tag=v1.19.0")
+source=("git+https://github.com/cameroncros/pc_manager.git#tag=v1.20.0")
 sha512sums=('SKIP')
 
 build() {
