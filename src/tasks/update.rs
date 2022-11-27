@@ -128,6 +128,7 @@ pub(crate) mod update {
         use crate::tasks::update::update::{build_package, get_update_url, task_update};
 
         #[test]
+        #[ignore]
         fn test_pkgbuild() {
             let tmpdir = tempdir::TempDir::new("pc_manager").unwrap();
             println!("TMPDIR: [{}]", tmpdir.as_ref().display());
