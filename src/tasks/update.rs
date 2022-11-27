@@ -120,7 +120,7 @@ pub(crate) mod update {
     #[cfg(test)]
     mod tests {
         use std::env::current_dir;
-        use std::fs::{Permissions, read_dir, remove_dir, set_permissions, copy};
+        use std::fs::{Permissions, read_dir, remove_dir_all, set_permissions, copy};
         use std::os::unix::fs::PermissionsExt;
         use std::process::Command;
         use nix::unistd::chdir;
@@ -158,7 +158,7 @@ pub(crate) mod update {
             assert_eq!(true, found);
 
             chdir(original_dir.as_path()).unwrap();
-            remove_dir(tmpdir.path()).unwrap();
+            remove_dir_all(tmpdir.path()).unwrap();
         }
 
         #[test]
@@ -187,7 +187,7 @@ pub(crate) mod update {
             assert_eq!(true, found);
 
             chdir(original_dir.as_path()).unwrap();
-            remove_dir(tmpdir.path()).unwrap();
+            remove_dir_all(tmpdir.path()).unwrap();
         }
 
         #[test]
